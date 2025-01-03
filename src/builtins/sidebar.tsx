@@ -20,7 +20,6 @@ export const Sidebar = ({ open, setOpen }: { open: boolean, setOpen: Function}) 
                 <SSLSwappedWebsite />
                 <Divider />
                 <Links />
-                
             </Stack>
         </Drawer>        
     )
@@ -72,7 +71,7 @@ const OnlineThing = ({ title, link } : { title : string, link : string }) => {
             <IconButton 
                 title="Open Counter in new tab"
                 onClick={() => window.open(link, '_blank')}
-                >
+            >
                 <OpenInNewTwoTone />
             </IconButton>
         </Stack>
@@ -84,10 +83,16 @@ export const Links = () => {
 
     return (
         <Stack direction='row' spacing={1} sx={{ paddingTop : 1}}>
-            <IconButton onClick={() => window.open('https://github.com/VigneshVSV/thing-control-panel', '_blank')}>
+            <IconButton 
+                onClick={() => window.open('https://github.com/VigneshVSV/thing-control-panel', '_blank')}
+                title='View source code on GitHub'
+            >
                 <GitHubIcon />
             </IconButton>
-            <IconButton onClick={() => window.open('https://github.com/sponsors/VigneshVSV', '_blank')}>
+            <IconButton 
+                onClick={() => window.open('https://github.com/sponsors/VigneshVSV', '_blank')}
+                title='Support the developer'
+            >
                 <VolunteerActivismIcon />
             </IconButton>
         </Stack>
