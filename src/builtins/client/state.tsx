@@ -376,7 +376,6 @@ export class Thing {
         for (let key of Object.keys(this.eventSources)) {
             try {
                 if (this.eventSources[key] instanceof EventSource) {
-                    // @ts-expect-error
                     this.eventSources[key].close()
                     delete this.eventSources[key]
                     this.removeEventSource(key)
