@@ -21,7 +21,6 @@ const App = () => {
                 <ThingClient />
                 <OnLoadMessage />
             </ThemeProvider>
-            
         </Box>
     )
 }
@@ -52,7 +51,7 @@ const OnLoadMessage = () => {
                     <li>check your server configuration for CORS headers and allow CORS on the browser</li>
                     <li>please do report security issues at the GitHub Repository</li>
                 </ul>
-                Please use it at your own risk. This website also does not use cookies. 
+                Please use it at your own risk. This website does not use cookies. 
             </Alert>
         </Snackbar>
     )

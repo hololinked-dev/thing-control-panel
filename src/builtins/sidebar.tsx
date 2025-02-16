@@ -42,8 +42,7 @@ const SSLSwappedWebsite = () => {
                 </Typography>
             </Link>
             <Typography sx={{ fontSize : 11, padding : 1, maxWidth : 250 }} variant='caption'>
-                HTTP & websocket non-SSL versions of the protocols are not supported in the same website as
-                HTTPS & WSS. For MQTT, please use MQTT over websockets.
+                non-SSL (unencrypted) versions of the protocols are not supported in the same website as the SSL versions.
             </Typography>
         </Stack>
     )
@@ -55,8 +54,8 @@ const OnlineThings = () => {
 
     return (
         <Stack sx={{ padding : 1}}>
-            <OnlineThing title='Counter' link='https://thing-control-panel.hololinked.dev/#http://plugfest.thingweb.io/http-data-schema-thing' />
-            <OnlineThing title='Smart Coffee Machine' link='https://thing-control-panel.hololinked.dev/#https://zion.vaimee.com/things/urn:uuid:7ba2bca0-a7f6-47b3-bdce-498caa33bbaf' />
+            <OnlineThing title='Oscilloscope Simulator' link='https://thing-control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td' />
+            <Typography fontSize={10}>More coming in due time...</Typography>
         </Stack>
     )
 }
