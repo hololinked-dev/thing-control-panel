@@ -30,6 +30,7 @@ import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from ".
 import { ClassDocWindow } from "./doc-viewer";
 import { useAutoCompleteOptionsFromLocalStorage, useLocalStorage } from "../hooks";
 import { Sidebar } from "../sidebar.js";
+import { appConfig } from "../../../app.config.js";
 
 
 
@@ -508,13 +509,26 @@ export const ThingClient = () => {
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
             // @ts-expect-error
-            servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
-            // servient.addClientFacotry(new Wor)
-            servient.start().then((WoT : any) => {
-                console.log("WoT servient started")
-                thing.current.servient = servient  
-                thing.current.wot = WoT
-            })
+            try {
+                if(appConfig.useSSL){
+                    servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
+                    servient.addClientFactory(new Wot.WebSocket.WebSocketSecureClientFactory({ allowSelfSigned : true }))
+                    console.log("added HTTPS and WSS client factories, HTTP & WS clients not supported although Thing Description may be fetched")
+                }
+                else {
+                    servient.addClientFactory(new Wot.Http.HttpClientFactory())
+                    servient.addClientFactory(new Wot.WebSocket.WebSocketClientFactory())
+                    console.log("added non-SSL HTTP and WS client factories, HTTPS and WSS clients not supported although Thing Description may be fetched")
+                }
+                // servient.addClientFacotry(new Wor)
+                servient.start().then((WoT : any) => {
+                    console.log("WoT servient started")
+                    thing.current.servient = servient  
+                    thing.current.wot = WoT
+                })
+            } catch (error) {
+                console.log("error in starting servient", error.message)
+            }
         }
         startServient()
         return () => {
