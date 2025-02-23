@@ -5,7 +5,8 @@ import { AxiosResponse } from "axios";
 import { getFormattedTimestamp, asyncRequest, parseActionPayloadWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-    RadioGroup, Box, Radio, useTheme, TextField, Checkbox } from "@mui/material";
+    RadioGroup, Box, Radio, useTheme, TextField, Checkbox, 
+    Typography} from "@mui/material";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
@@ -98,7 +99,7 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
     
     const [clientChoice, _] = useState('node-wot')
     const [fetchExecutionLogs, setFetchExecutionLogs] = useState<boolean>(false)                                                                                               
-    const [inputChoice, setInputChoice ] = useState('JSON')
+    const [inputChoice, setInputChoice ] = useState('code editor')
     const [timeout, setTimeout] = useState<number>(-1)
     const [timeoutValid, setTimeoutValid] = useState<boolean>(true)
     const [skipResponseValidation, setSkipResponseValidation] = useState(false)
@@ -214,11 +215,11 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
         <Stack id='action-execution-client-layout' sx={{ flexGrow: 1, display : 'flex', pt: 2 }}>
             <ActionInputChoice 
                 choice={inputChoice} 
-                signature={action.signature}
                 inputSchema={action.input} 
                 setValue={setKwargsValue} 
                 value={kwargsValue}    
             />
+            {inputChoice === 'code editor' && <Typography variant="caption" sx={{pl : 2, pt : 1}}>Use double quotes only</Typography>}
             <Stack 
                 id='action-execution-client-options-layout' 
                 direction="row" 
@@ -232,7 +233,7 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                         onChange={handleInputSelection}
                     >
                         <FormControlLabel value="raw" control={<Radio size="small" />} label="raw" />
-                        <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
+                        <FormControlLabel value="code editor" control={<Radio size="small" />} label="code editor" />
                     </RadioGroup>
                 </FormControl>
                 {/* <Box sx={{ pl : 2, pt: 2, pr: 2, maxWidth : 100 }} > */}
@@ -295,7 +296,6 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
 
 type ActionInputChoiceProps = { 
     choice : string
-    signature : Array<string>
     inputSchema : object
     setValue : any
     value : any 
@@ -303,8 +303,9 @@ type ActionInputChoiceProps = {
 
 export const ActionInputChoice = (props : ActionInputChoiceProps) => {
     const theme = useTheme()
+
     switch(props.choice) {
-        case 'JSON' : return <Box id="ace-editor-box" sx={{display : 'flex', flexGrow : 1}}>
+        case 'code editor' : return <Box id="ace-editor-box" sx={{display : 'flex', flexGrow : 1}}>
                                 <AceEditor
                                     name="actions-client-json-input"
                                     placeholder="payload for executing action"
@@ -312,11 +313,16 @@ export const ActionInputChoice = (props : ActionInputChoiceProps) => {
                                     theme="crimson_editor"
                                     value={
                                         props.value? props.value : 
-                                        props.signature? props.signature.length > 0 ?  
-                                            props.signature.reduce((total, current) => {
-                                                total = total + '\n\t\"' + current + '\" : ,'
-                                                return total 
-                                            }, `{`).slice(0, -1) + '\n}' : `` : `` }
+                                            props.inputSchema? 
+                                                props.inputSchema.type === 'object'? 
+                                                    props.inputSchema.properties ? 
+                                                        `{${Object.keys(props.inputSchema.properties).map(key => 
+                                                            `\n\t"${key}": ${props.inputSchema.properties[key].default ? JSON.stringify(props.inputSchema.properties[key].default) : ''}`
+                                                        ).join(',').slice(0, -1)}\n}` : 
+                                                        ''
+                                                : ''
+                                            : ''
+                                    }
                                     onChange={(newValue) => props.setValue(newValue)}
                                     fontSize={18}
                                     showPrintMargin={true}

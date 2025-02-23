@@ -307,6 +307,14 @@ export const PropertyInputChoice = (props : PropertyInputChoiceProps) => {
                                         placeholder={props.property.readOnly? "disabled" : "enter value here" }
                                         mode="json"
                                         theme="crimson_editor"
+                                        value={
+                                            props.property.readOnly? props.value : 
+                                                props.property.type === 'object'? 
+                                                    props.property.properties ? 
+                                                        `{${Object.keys(props.property.properties).map(key => `\n\t"${key}": `).join(',').slice(0, -1)}\n}` 
+                                                        : ''
+                                                : ''
+                                        }
                                         onChange={(newValue) => props.setValue(newValue)}
                                         fontSize={18}
                                         showPrintMargin={true}
