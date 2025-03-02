@@ -1,0 +1,16 @@
+node_modules/
+.git/
+.env
+logs/
+coverage/
+.vscode/
+.idea/
+*.log
+*.log.*
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+*.old

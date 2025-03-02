@@ -17,8 +17,8 @@ export const Sidebar = ({ open, setOpen }: { open: boolean, setOpen: Function}) 
                 <Divider><Typography variant='button' color='black'>Online Things</Typography></Divider>
                 <OnlineThings />
                 <Divider />
-                <SSLSwappedWebsite />
-                <Divider />
+                {/* <SSLSwappedWebsite /> */}
+                {/* <Divider /> */}
                 <Links />
             </Stack>
         </Drawer>        
@@ -54,7 +54,7 @@ const OnlineThings = () => {
 
     return (
         <Stack sx={{ padding : 1}}>
-            <OnlineThing title='Oscilloscope Simulator' link='https://thing-control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td' />
+            <OnlineThing title='Oscilloscope Simulator' link='https://control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td' />
             <Typography fontSize={10}>More coming in due time...</Typography>
         </Stack>
     )
@@ -66,7 +66,7 @@ const OnlineThing = ({ title, link } : { title : string, link : string }) => {
     return (
 
         <Stack direction={'row'} spacing={1}>
-            <Button>{title}</Button>
+            <Button onClick={() => window.location.assign(link)}>{title}</Button>
             <IconButton 
                 title="Open Counter in new tab"
                 onClick={() => window.open(link, '_blank')}

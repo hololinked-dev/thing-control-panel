@@ -314,9 +314,13 @@ export const ActionInputChoice = (props : ActionInputChoiceProps) => {
                                     value={
                                         props.value? props.value : 
                                             props.inputSchema? 
+                                                // @ts-expect-error
                                                 props.inputSchema.type === 'object'? 
+                                                    // @ts-expect-error
                                                     props.inputSchema.properties ? 
+                                                        // @ts-expect-error
                                                         `{${Object.keys(props.inputSchema.properties).map(key => 
+                                                            // @ts-expect-error
                                                             `\n\t"${key}": ${props.inputSchema.properties[key].default ? JSON.stringify(props.inputSchema.properties[key].default) : ''}`
                                                         ).join(',').slice(0, -1)}\n}` : 
                                                         ''

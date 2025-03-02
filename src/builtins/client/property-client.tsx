@@ -310,7 +310,9 @@ export const PropertyInputChoice = (props : PropertyInputChoiceProps) => {
                                         value={
                                             props.property.readOnly? props.value : 
                                                 props.property.type === 'object'? 
+                                                    // @ts-expect-error
                                                     props.property.properties ? 
+                                                        // @ts-expect-error
                                                         `{${Object.keys(props.property.properties).map(key => `\n\t"${key}": `).join(',').slice(0, -1)}\n}` 
                                                         : ''
                                                 : ''

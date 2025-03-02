@@ -73,6 +73,11 @@ export const Locator = observer(() => {
                 console.log(thing.errorMessage)
             if(thing.errorTraceback)
                 console.log(thing.errorTraceback)
+        } else {
+            if (window.location.hash && currentURL === window.location.hash.substring(1)) {
+                // load successful, remove hash
+                window.location.hash = '';
+            }
         }
         setLoadingThing(false)
     }, [settings])
@@ -508,15 +513,18 @@ export const ThingClient = () => {
             // @ts-expect-error
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
-            // @ts-expect-error
             try {
                 if(appConfig.useSSL){
+                    // @ts-expect-error
                     servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
+                    // @ts-expect-error
                     servient.addClientFactory(new Wot.WebSocket.WebSocketSecureClientFactory({ allowSelfSigned : true }))
                     console.log("added HTTPS and WSS client factories, HTTP & WS clients not supported although Thing Description may be fetched")
                 }
                 else {
+                    // @ts-expect-error
                     servient.addClientFactory(new Wot.Http.HttpClientFactory())
+                    // @ts-expect-error
                     servient.addClientFactory(new Wot.WebSocket.WebSocketClientFactory())
                     console.log("added non-SSL HTTP and WS client factories, HTTPS and WSS clients not supported although Thing Description may be fetched")
                 }
