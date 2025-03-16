@@ -9,9 +9,11 @@ The GUI is only coming up, its still rough on the edges. If anything is not upto
 <br>
 [![email](https://img.shields.io/badge/email%20me-brown)](mailto:vignesh.vaidyanathan@hololinked.dev) [![ways to contact me](https://img.shields.io/badge/ways_to_contact_me-brown)](https://hololinked.dev/contact) <br>
 
-[Visit Here](https://control-panel.hololinked.dev) for predeployed website with SSL <br>
-[Visit Here](http://no-ssl-control-panel.hololinked.net) for predeployed website without SSL <br>
-
+[Visit Here](https://control-panel.hololinked.dev) for predeployed website with SSL. <br>
+[Visit Here](http://no-ssl-control-panel.hololinked.net) for predeployed website without SSL. <br> <br>
+![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fcontrol-panel.hololinked.dev&label=SSL%20Website)
+![Website Status](https://img.shields.io/website?url=http%3A%2F%2Fno-ssl-control-panel.hololinked.net&label=Non%20SSL%20Website) <br>
+<br>
 Based on your server SSL support, you can choose the appropriate link.
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hololinked-dev/thing-control-panel/docker-publish.yml?label=Build%20Docker%20Image)
