@@ -9,7 +9,16 @@ The GUI is only coming up, its still rough on the edges. If anything is not upto
 <br>
 [![email](https://img.shields.io/badge/email%20me-brown)](mailto:vignesh.vaidyanathan@hololinked.dev) [![ways to contact me](https://img.shields.io/badge/ways_to_contact_me-brown)](https://hololinked.dev/contact) <br>
 
+[Visit Here](https://control-panel.hololinked.dev) for predeployed website with SSL <br>
+[Visit Here](http://no-ssl-control-panel.hololinked.net) for predeployed website without SSL <br>
+
+Based on your server SSL support, you can choose the appropriate link.
+
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hololinked-dev/thing-control-panel/docker-publish.yml?label=Build%20Docker%20Image)
+
 ### Installation
+
+If you intend to self host or use as a desktop app:
 
 ```npm install . ``` or ```npm install . --force``` to install the requirements and dependencies <br/>
 ```npm run dev``` to run as react app <br/>
@@ -25,12 +34,11 @@ your thing descriptions, click on settings (cog-wheel on top left) and edit "def
 your requirements. The address enetered in the address bar will then be considered as base URL and the default endpoint will be appended.
 Store your addresses in the browser using the store icon on the top right so that you dont have to type the address everytime - this storage is browser specific.  
 
-If you are using `hololinked` as the server, the default endpoint must be one of `/resources/portal-app`, `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and
+If you are using `hololinked` as the server, the default endpoint must be one of `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and
 enter the Thing addresss as `http(s)://{address of host}/{instance name of the thing}`.
 
 If self signed HTTP(s) certificate is used, you might have to give permission to the browser. You can open the endpoint in new tab using the new tab button on top right. 
-This should fetch the thing description without fail. Sometimes, the permission given for self signed certificate given may not match the form entries, so please do make
-sure you can atleast fetch/read one property if things are still not working.  
+This should fetch the thing description without fail. Sometimes, the permission given for self signed certificate given may not match the form (TD form field) entries, so please do make sure you can atleast fetch/read one property from a browser tab if the GUI is still not working.  
 
 After you load, your defined properties, actions and events are shown. You can freely interact with them as shown below:
 
@@ -57,7 +65,7 @@ More entries will take more RAM, but useful for capturing events or eventful mea
 
 This file contains certain configurations that can be modified according to your requirements:
 
-- `useHTTPs` - when set to `true`, the app will rendered with a self signed SSL certificate from vite. 
+- `useSSL` - when set to `true`, the app will rendered with a self signed SSL certificate from vite, and the clients will be forced to use SSL. 
 
 ### To Do
 

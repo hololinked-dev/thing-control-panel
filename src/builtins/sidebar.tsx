@@ -30,7 +30,7 @@ const SSLDomainName = 'hololinked.dev'
 const nonSSLWebsiteURL = `http://no-ssl-control-panel.${nonSSLDomainName}`
 const SSLWebsiteURL = `https://control-panel.${SSLDomainName}`
 
-const IsSSLWebsite = () => window.location.hostname.endsWith('localhost')
+const IsSSLWebsite = () => window.location.hostname.endsWith('.dev')
 
 const OscilloscopeSimulatorNoSSL = `${nonSSLWebsiteURL}/#http://examples.${nonSSLDomainName}/simulations/oscilloscope/resources/wot-td`
 const DataSchemaThingNoSSL = `${nonSSLWebsiteURL}/#http://external-examples.${nonSSLDomainName}/data-schema-thing`
