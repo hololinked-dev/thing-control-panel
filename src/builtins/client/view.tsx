@@ -513,8 +513,12 @@ export const ThingClient = () => {
             // @ts-expect-error
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
+            const IsOurWebsite = window.location.hostname.endsWith('hololinked.dev') || window.location.hostname.endsWith('hololinked.net')
+            const IsSSLWebsite = window.location.hostname.endsWith('hololinked.dev')
+   
+            
             try {
-                if(appConfig.useSSL){
+                if((IsOurWebsite && IsSSLWebsite) || (!IsOurWebsite && appConfig.useSSL)){
                     // @ts-expect-error
                     servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
                     // @ts-expect-error
