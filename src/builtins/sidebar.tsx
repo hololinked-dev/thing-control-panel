@@ -80,8 +80,8 @@ const OnlineThings = () => {
         <Stack sx={{ padding : 1}}>
             {
                 IsSSLWebsite() ? 
-                NoSSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />) :
-                SSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />)
+                SSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />):
+                NoSSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />)
             }
             <Typography fontSize={10}>More coming in due time...</Typography>
         </Stack>
