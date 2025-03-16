@@ -3,6 +3,8 @@ import {  useState, useRef, useCallback, useContext, createContext, useEffect } 
 import * as React from "react";
 import { observer } from "mobx-react-lite";
 import '../../lib/wot-bundle.min.js';
+// import '../../lib/types/index.d.ts';
+// import Wot from '../../lib/dist/wot-bundle.min.js';
 // Custom functional libraries
 import { EventInformation, ActionInformation, PropertyInformation, ResourceInformation, Thing} from './state'
 import { AppSettings, ClientSettingsType, defaultClientSettings } from "./app-settings.js";
@@ -17,6 +19,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
+import MenuIcon from '@mui/icons-material/Menu';
 import NewWindow from "react-new-window";
 // Custom component libraries
 import { TabPanel } from "../reuse-components";
@@ -26,6 +29,8 @@ import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
 import { useAutoCompleteOptionsFromLocalStorage, useLocalStorage } from "../hooks";
+import { Sidebar } from "../sidebar.js";
+import { appConfig } from "../../../app.config.js";
 
 
 
@@ -68,6 +73,11 @@ export const Locator = observer(() => {
                 console.log(thing.errorMessage)
             if(thing.errorTraceback)
                 console.log(thing.errorTraceback)
+        } else {
+            if (window.location.hash && currentURL === window.location.hash.substring(1)) {
+                // load successful, remove hash
+                window.location.hash = '';
+            }
         }
         setLoadingThing(false)
     }, [settings])
@@ -163,7 +173,7 @@ const LocatorAutocomplete = ({
             sx={{ flexGrow : 1, display: 'flex'}}
             renderInput={(params) =>
                 <TextField
-                    label="URL"
+                    label="Thing Description URL"
                     variant="filled"
                     error={!thing.fetchSuccessful}
                     sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
@@ -485,6 +495,7 @@ export const ThingClient = () => {
     const [_existingSettings, updateLocalStorage] = useLocalStorage('thing-viewer-settings', defaultClientSettings)
     const [settings, updateSettings] = useState<ClientSettingsType>(_existingSettings)
     const [showSettings, setShowSettings] = useState<boolean>(false)
+    const [showSidebar, setShowSidebar] = useState(false)
     const [pageState, _] = useState({ settings, updateSettings, showSettings, setShowSettings, updateLocalStorage })
     const thing = useRef<Thing>(new Thing())
 
@@ -502,13 +513,34 @@ export const ThingClient = () => {
             // @ts-expect-error
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
-            // @ts-expect-error
-            servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
-            servient.start().then((WoT : any) => {
-                console.log("WoT servient started")
-                thing.current.servient = servient  
-                thing.current.wot = WoT
-            })
+            const IsOurWebsite = window.location.hostname.endsWith('hololinked.dev') || window.location.hostname.endsWith('hololinked.net')
+            const IsSSLWebsite = window.location.hostname.endsWith('hololinked.dev')
+   
+            
+            try {
+                if((IsOurWebsite && IsSSLWebsite) || (!IsOurWebsite && appConfig.useSSL)){
+                    // @ts-expect-error
+                    servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
+                    // @ts-expect-error
+                    servient.addClientFactory(new Wot.WebSocket.WebSocketSecureClientFactory({ allowSelfSigned : true }))
+                    console.log("added HTTPS and WSS client factories, HTTP & WS clients not supported although Thing Description may be fetched")
+                }
+                else {
+                    // @ts-expect-error
+                    servient.addClientFactory(new Wot.Http.HttpClientFactory())
+                    // @ts-expect-error
+                    servient.addClientFactory(new Wot.WebSocket.WebSocketClientFactory())
+                    console.log("added non-SSL HTTP and WS client factories, HTTPS and WSS clients not supported although Thing Description may be fetched")
+                }
+                // servient.addClientFacotry(new Wor)
+                servient.start().then((WoT : any) => {
+                    console.log("WoT servient started")
+                    thing.current.servient = servient  
+                    thing.current.wot = WoT
+                })
+            } catch (error) {
+                console.log("error in starting servient", error.message)
+            }
         }
         startServient()
         return () => {
@@ -528,6 +560,9 @@ export const ThingClient = () => {
                     <Stack id="thing-viewer-page-layout" sx={{ flexGrow: 1, display: 'flex'}}>
                         <Stack direction="row" sx={{ flexGrow: 1, display : 'flex' }}>
                             <Box sx={{ display : 'flex', pb : 3 }}>
+                                <IconButton id='view-sidebar-icon' sx={{ borderRadius : 0 }} onClick={() => setShowSidebar(true)}>
+                                    <MenuIcon />
+                                </IconButton>
                                 {!showSettings ?
                                     <IconButton id='show-settings-icon' onClick={() => setShowSettings(true)} sx={{ borderRadius : 0 }}>
                                         <SettingsTwoToneIcon />
@@ -544,6 +579,7 @@ export const ThingClient = () => {
                             : 
                             <ThingViewer />
                         }
+                        <Sidebar open={showSidebar} setOpen={setShowSidebar} />
                     </Stack>
                 </ThingManager.Provider>
             </PageContext.Provider>

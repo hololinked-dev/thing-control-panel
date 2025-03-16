@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 import { observer } from "mobx-react-lite";
 // Custom functional libraries
-import { getFormattedTimestamp,  asyncRequest } from "../utils";
+import { getFormattedTimestamp,  asyncRequest, parseWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
     RadioGroup, Box, Radio, useTheme, TextField, 
@@ -82,14 +82,7 @@ export const PropertyTabComponents = ( { tab, property } : PropertyTabComponents
     const thing = useContext(ThingManager) as Thing
     switch(tab) {
         case "Execute"  : return (
-                                <Stack sx={{ flexGrow : 1 }}>
-                                    <RW property={property}></RW>
-                                    {property.observable? 
-                                        <Observe property={property}></Observe> 
-                                        :
-                                        null
-                                    }   
-                                </Stack>
+                                <RWO property={property}></RWO>
                             )
         default : return (
                         <ObjectInspector 
@@ -102,7 +95,7 @@ export const PropertyTabComponents = ( { tab, property } : PropertyTabComponents
 
 
 
-export const RW = ( { property } : { property : PropertyInformation}) => {
+export const RWO = ( { property } : { property : PropertyInformation}) => {
     // no need observer HOC as well
     const thing = useContext(ThingManager) as Thing
     const { settings } = useContext(PageContext) as PageProps
@@ -157,7 +150,8 @@ export const RW = ( { property } : { property : PropertyInformation}) => {
                 if(mode === 'READ') 
                     response = await thing.client.readProperty(property.name)
                 else 
-                    response = await thing.client.writeProperty(property.name, parseWithInterpretation(propValue, property.type))    
+                    response = await thing.client.writeProperty(property.name, 
+                                            parseWithInterpretation(propValue, property.type))    
                 thing.setLastResponse(response)
                 if(response) {
                     response.ignoreValidation = skipDataSchemaValidation
@@ -286,6 +280,7 @@ export const RW = ( { property } : { property : PropertyInformation}) => {
                     sx={{ pl : 1 }}
                 />
             </Stack>
+            {property.observable? <Observe property={property} skipDataSchemaValidation={skipDataSchemaValidation}></Observe> : null}   
         </Stack>
     )
 }
@@ -312,6 +307,16 @@ export const PropertyInputChoice = (props : PropertyInputChoiceProps) => {
                                         placeholder={props.property.readOnly? "disabled" : "enter value here" }
                                         mode="json"
                                         theme="crimson_editor"
+                                        value={
+                                            props.property.readOnly? props.value : 
+                                                props.property.type === 'object'? 
+                                                    // @ts-expect-error
+                                                    props.property.properties ? 
+                                                        // @ts-expect-error
+                                                        `{${Object.keys(props.property.properties).map(key => `\n\t"${key}": `).join(',').slice(0, -1)}\n}` 
+                                                        : ''
+                                                : ''
+                                        }
                                         onChange={(newValue) => props.setValue(newValue)}
                                         fontSize={18}
                                         showPrintMargin={true}
@@ -350,25 +355,6 @@ export const PropertyInputChoice = (props : PropertyInputChoiceProps) => {
     }
 }
 
-export const parseWithInterpretation = (value : any, interpretation : string) => {
-    // console.log("value", value)
-    let jsonValue
-    try {
-        jsonValue = JSON.parse(value)
-    } catch(error) {
-        jsonValue = value
-    }
-
-    // console.log(interpretation, jsonValue)
-    switch(interpretation.toLowerCase()) {
-        case 'integer' : return Number(jsonValue) 
-        case 'number': return Number(jsonValue)
-        case 'bool' : 
-        case 'boolean' : return Boolean(Number(jsonValue))
-        default : return jsonValue // String, Bytes, IPAddress, 
-        // object & array?
-    }
-}
 
 // @ts-ignore
 function stringify(val, depth, replacer, space) {
@@ -386,8 +372,7 @@ function stringify(val, depth, replacer, space) {
 }
 
 
-
-const Observe = observer(({ property } : { property : PropertyInformation}) => {
+const Observe = observer(({ property, skipDataSchemaValidation } : { property : PropertyInformation, skipDataSchemaValidation : boolean}) => {
     // This component will error if property is not observable
     const thing = useContext(ThingManager) as Thing
     const { settings } = useContext(PageContext) as PageProps
@@ -402,14 +387,18 @@ const Observe = observer(({ property } : { property : PropertyInformation}) => {
     const observeProp = useCallback(() => {
         if (clientChoice === "node-wot") {
             thing.client.observeProperty(property.name, async (data : any) => {
-                // data.ignoreValidation = true
-                const value = await data.value()
-                if(settings.console.stringifyOutput)    
-                    console.log(`${property.name} change event - ${value}`)            
-                else 
-                    console.log(`${property.name} change event - ${JSON.parse(value)}`)
+                try {
+                    data.ignoreValidation = skipDataSchemaValidation
+                    const value = await data.value()
+                    if(settings.console.stringifyOutput)
+                        console.log(`${property.name} change event - ${value}`)
+                    else
+                        console.log(`${property.name} change event - ${JSON.parse(value)}`)
+                } catch(error) {
+                    console.log(`${property.name} change event error occured ${error}`)
+                }
             }).then((subscription : any) => {
-                thing.addEventSource(property.name, subscription) 
+                // thing.addEventSource(property.name, subscription) 
                 console.log(`subscribed to observable event ${property.name}`)
             })
             thing.addEventSource(property.name, property.name) 
@@ -429,7 +418,7 @@ const Observe = observer(({ property } : { property : PropertyInformation}) => {
             }
             thing.addEventSource(eventURL, source)
         }
-    }, [thing, property, eventURL, settings, clientChoice])
+    }, [thing, property, eventURL, settings.console.stringifyOutput, skipDataSchemaValidation, clientChoice])
 
     const unobserveProp = useCallback(() => {
         if (clientChoice === "node-wot") {

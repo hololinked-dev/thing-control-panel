@@ -1,87 +1,9 @@
 // Internal & 3rd party functional libraries
 import  { useState, useCallback, useEffect, MutableRefObject } from "react";
 // Custom functional libraries
-import { StateManager } from "@hololinked/mobx-render-engine/state-manager";
 import axios, { AxiosResponse } from "axios";
 // Internal & 3rd party component libraries
 // Custom component libraries 
-
-
-
-export const useDashboard = (dashboardURL : string, dashboardStateManager : MutableRefObject<StateManager | null>) : [
-        loading : boolean, 
-        fetchData : () => Promise<boolean>,
-        errorMessage : string, 
-        errorTraceback : string[],
-        clearErrorMessage : () => void
-    ] => {
-
-    const [loading, setLoading] = useState<boolean>(false)
-    const [errorMessage, setErrorMessage] = useState<string>('')
-    const [errorTraceback, setErrorTraceback] = useState<string[]>([]) 
-
-    const clearErrorMessage = useCallback(() => {
-        setErrorMessage('')
-        setErrorTraceback([])
-    }, [])
-
-    const fetchData = useCallback(async() => {
-        let errMsg = '', errTb = []
-        setLoading(true)
-        // @ts-ignore
-        let response : AxiosResponse = null
-        try {
-            response  = await axios.get(dashboardURL)
-            if (!dashboardStateManager.current){
-                errMsg = 'Internal error - dashboard state manager not created. Use setDashboardStateManager hook before calling fetchData'
-                // developer protection
-            }
-            else if(response.status === 200) {
-                try {
-                    const UIComponents =  response.data? response.data.UIcomponents : response.data.UIcomponents
-                    const actions = response.data? response.data.actions : response.data.actions
-                    dashboardStateManager.current.deleteComponents()
-                    dashboardStateManager.current.deleteActions()
-                    dashboardStateManager.current.store(
-                        dashboardURL,
-                        UIComponents,
-                        actions
-                    )
-                    dashboardStateManager.current.updateActions(actions)
-                    dashboardStateManager.current.updateComponents(UIComponents)
-                } catch (error : any) {
-                    errMsg = "Failed to load view - " + error.message ? error.message : error   
-                    // dashboardStateManager.current.logger.logErrorMessage("IconButton", "quick-view", error as string)      
-                }
-            }
-        } catch(error : any) {
-            if(error.response) {
-                let response = error.response
-                if(response.data && response.data.exception) {
-                    errMsg = response.data.exception.message
-                    errTb = response.data.exception.traceback
-                } 
-                else {
-                    errMsg = response.status ? `resonse status code - ${response.status} - ${response.statusText}` : 
-                                'invalid response after request - is the address correct?'
-                }
-            }
-            else {
-                console.log("dashboard fetch failed - ", error.message)
-                errMsg = `Failed to fetch JSON - ${error.message} - check CORS, https certificate, reachability or the console for more details`
-                // dashboardStateManager.current.logger.logErrorMessage("IconButton", "quick-view", reason)  
-            }
-        }
-        setLoading(false)
-        setErrorMessage(errMsg)
-        setErrorTraceback(errTb)
-        if(response && response.status && response.status === 200 && !errMsg)
-            return true 
-        return false
-    }, [dashboardURL])
-
-    return [loading,  fetchData, errorMessage, errorTraceback, clearErrorMessage]
-}
 
 
 

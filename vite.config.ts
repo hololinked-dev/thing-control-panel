@@ -7,7 +7,7 @@ dns.setDefaultResultOrder('verbatim')
 import { appConfig } from './app.config.js';
 
 const plugins= [react()] 
-if(appConfig.useHTTPs)
+if(appConfig.useSSL)
     plugins.push(mkcert())
 
 // https://vitejs.dev/config/

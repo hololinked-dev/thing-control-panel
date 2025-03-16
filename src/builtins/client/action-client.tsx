@@ -2,10 +2,11 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { AxiosResponse } from "axios";
 // Custom functional libraries
-import { getFormattedTimestamp, asyncRequest } from "../utils";
+import { getFormattedTimestamp, asyncRequest, parseActionPayloadWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-    RadioGroup, Box, Radio, useTheme, TextField, Checkbox } from "@mui/material";
+    RadioGroup, Box, Radio, useTheme, TextField, Checkbox, 
+    Typography} from "@mui/material";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
@@ -81,24 +82,24 @@ export const ActionTabComponents = ( {tab, action} : ActionTabComponentsProps) =
             const thing = useContext(ThingManager) as Thing
             return <ObjectInspector expandLevel={3} data={thing.td["actions"][action.name]} /> 
         }
-        default : return <ActionExecutionClient action={action} ></ActionExecutionClient>
+        default : return <ActionInvokationClient action={action} ></ActionInvokationClient>
     }
 }
 
 
 
-type ActionExecutionProps = {
+type ActionInvokationProps = {
     action : ActionInformation
 }
 
-export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
+export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
 
     const thing = useContext(ThingManager) as Thing
     const { settings } = useContext(PageContext) as PageProps
     
     const [clientChoice, _] = useState('node-wot')
     const [fetchExecutionLogs, setFetchExecutionLogs] = useState<boolean>(false)                                                                                               
-    const [inputChoice, setInputChoice ] = useState('JSON')
+    const [inputChoice, setInputChoice ] = useState('code editor')
     const [timeout, setTimeout] = useState<number>(-1)
     const [timeoutValid, setTimeoutValid] = useState<boolean>(true)
     const [skipResponseValidation, setSkipResponseValidation] = useState(false)
@@ -176,6 +177,7 @@ export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
                 
             }
             else {
+                console.log("payload", data)
                 let lastResponse = await thing.client.invokeAction(action.name, data)
                 thing.setLastResponse(lastResponse)
                 if(skipResponseValidation)
@@ -185,7 +187,7 @@ export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
                     consoleOutput = 'no return value'
             }       
             if(settings.console.stringifyOutput) 
-                console.log("\n" + JSON.stringify(consoleOutput, null, 2))
+                console.log(JSON.stringify(consoleOutput, null, 2))
             else 
                 console.log(consoleOutput)
             let executionTime = Date.now() - requestTime_
@@ -213,10 +215,11 @@ export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
         <Stack id='action-execution-client-layout' sx={{ flexGrow: 1, display : 'flex', pt: 2 }}>
             <ActionInputChoice 
                 choice={inputChoice} 
-                signature={action.signature} 
+                inputSchema={action.input} 
                 setValue={setKwargsValue} 
                 value={kwargsValue}    
             />
+            {inputChoice === 'code editor' && <Typography variant="caption" sx={{pl : 2, pt : 1}}>Use double quotes only</Typography>}
             <Stack 
                 id='action-execution-client-options-layout' 
                 direction="row" 
@@ -230,7 +233,7 @@ export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
                         onChange={handleInputSelection}
                     >
                         <FormControlLabel value="raw" control={<Radio size="small" />} label="raw" />
-                        <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
+                        <FormControlLabel value="code editor" control={<Radio size="small" />} label="code editor" />
                     </RadioGroup>
                 </FormControl>
                 {/* <Box sx={{ pl : 2, pt: 2, pr: 2, maxWidth : 100 }} > */}
@@ -292,16 +295,17 @@ export const ActionExecutionClient = ( { action } : ActionExecutionProps) => {
 
 
 type ActionInputChoiceProps = { 
-    choice : string, 
-    signature : Array<string>,
+    choice : string
+    inputSchema : object
     setValue : any
     value : any 
 }
 
 export const ActionInputChoice = (props : ActionInputChoiceProps) => {
     const theme = useTheme()
+
     switch(props.choice) {
-        case 'JSON' : return <Box id="ace-editor-box" sx={{display : 'flex', flexGrow : 1}}>
+        case 'code editor' : return <Box id="ace-editor-box" sx={{display : 'flex', flexGrow : 1}}>
                                 <AceEditor
                                     name="actions-client-json-input"
                                     placeholder="payload for executing action"
@@ -309,11 +313,20 @@ export const ActionInputChoice = (props : ActionInputChoiceProps) => {
                                     theme="crimson_editor"
                                     value={
                                         props.value? props.value : 
-                                        props.signature? props.signature.length > 0 ?  
-                                            props.signature.reduce((total, current) => {
-                                                total = total + '\n\t\"' + current + '\" : ,'
-                                                return total 
-                                            }, `{`).slice(0, -1) + '\n}' : `` : `` }
+                                            props.inputSchema? 
+                                                // @ts-expect-error
+                                                props.inputSchema.type === 'object'? 
+                                                    // @ts-expect-error
+                                                    props.inputSchema.properties ? 
+                                                        // @ts-expect-error
+                                                        `{${Object.keys(props.inputSchema.properties).map(key => 
+                                                            // @ts-expect-error
+                                                            `\n\t"${key}": ${props.inputSchema.properties[key].default ? JSON.stringify(props.inputSchema.properties[key].default) : ''}`
+                                                        ).join(',').slice(0, -1)}\n}` : 
+                                                        ''
+                                                : ''
+                                            : ''
+                                    }
                                     onChange={(newValue) => props.setValue(newValue)}
                                     fontSize={18}
                                     showPrintMargin={true}
@@ -344,6 +357,10 @@ export const ActionInputChoice = (props : ActionInputChoiceProps) => {
                             label="arguments"
                             helperText="press enter to expand"
                             sx={{ flexGrow: 1, display : 'flex' }}
+                            onChange={(event) => 
+                                props.setValue(JSON.stringify(parseActionPayloadWithInterpretation(
+                                    event.target.value, props.inputSchema)))
+                            }
                         />
     }
 }
