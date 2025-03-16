@@ -1,14 +1,16 @@
 # Use an nginx image to serve the built application
+FROM node:22 AS build
+
+WORKDIR /app 
+COPY package*.json ./
+RUN npm install . --force
+
+COPY . /app/
+RUN npm run build
+
 FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
 
-WORKDIR /usr/share/nginx/html
-
-RUN ls -la
-# Copy the built files from the dist folder on the host machine to the nginx folder in the container
-COPY dist/. .
-
-# Expose port 80
 EXPOSE 80
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
