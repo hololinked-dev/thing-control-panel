@@ -35,21 +35,25 @@ const IsSSLWebsite = () => window.location.hostname.endsWith('.dev')
 const OscilloscopeSimulatorNoSSL = `${nonSSLWebsiteURL}/#http://examples.${nonSSLDomainName}/simulations/oscilloscope/resources/wot-td`
 const DataSchemaThingNoSSL = `${nonSSLWebsiteURL}/#http://external-examples.${nonSSLDomainName}/data-schema-thing`
 const AdvancedCoffeeMachineNoSSL = `${nonSSLWebsiteURL}/#http://external-examples.${nonSSLDomainName}/advanced-coffee-machine`
+const SpectrometerNoSSL = `${nonSSLWebsiteURL}/#http://examples.${nonSSLDomainName}/simulations/spectrometer/resources/wot-td`
 
 const OscilloscopeSimulatorSSL = `${SSLWebsiteURL}/#https://examples.${SSLDomainName}/simulations/oscilloscope/resources/wot-td`
 const DataSchemaThingSSL = `${SSLWebsiteURL}/#https://external-examples.${SSLDomainName}/data-schema-thing`
 const AdvancedCoffeeMachineSSL = `${SSLWebsiteURL}/#https://external-examples.${SSLDomainName}/advanced-coffee-machine`
+const SpectrometerSSL = `${SSLWebsiteURL}/#https://examples.${SSLDomainName}/simulations/spectrometer/resources/wot-td`
 
 const SSLThings = [
     { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorSSL },
     { title : 'Data Schema Thing', link : DataSchemaThingSSL },
-    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineSSL }
+    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineSSL },
+    { title : 'Spectrometer Simulator', link : SpectrometerSSL }
 ]
 
 const NoSSLThings = [
     { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorNoSSL },
     { title : 'Data Schema Thing', link : DataSchemaThingNoSSL },
-    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineNoSSL }
+    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineNoSSL },
+    { title : 'Spectrometer Simulator', link : SpectrometerNoSSL }
 ]
 
 
@@ -93,7 +97,7 @@ const OnlineThing = ({ title, link } : { title : string, link : string }) => {
 
     return (
         <Stack direction={'row'} spacing={1}>
-            <Button onClick={() => window.location.assign(link)}>{title}</Button>
+            <Button  sx={{ pointerEvents: "none" }} onClick={(e) => e.preventDefault()}>{title}</Button>
             <IconButton 
                 title="Open Counter in new tab"
                 onClick={() => window.open(link, '_blank')}
