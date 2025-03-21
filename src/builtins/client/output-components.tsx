@@ -120,11 +120,22 @@ export const UndockableConsole = observer(() => {
 
     
     return(
-        <Stack id="client-output-console-box" sx={{ pt : 1, flexGrow : 1, display : 'flex' }}>
-            <Divider sx ={{ pb : 2, flexGrow : 1, display : 'flex' }} id="client-output-console-title">
+        <Stack id="client-output-console-box" sx={{ pt : 1 }}>
+            <Divider id="client-output-console-title">
                 <Typography variant="button" color="GrayText">OUTPUT</Typography>
             </Divider>
-            <Stack id="console-window-options-layout" direction="row" sx ={{ pb : 2, flexGrow : 1, display : 'flex' }}>
+            <Stack 
+                id="console-window-options-layout" 
+                direction="row" 
+                sx={{ 
+                    pb: 1, flexGrow: 1, display: 'flex', overflowX: 'scroll',
+                    scrollbarWidth: "none", // Firefox
+                    "&::-webkit-scrollbar": {
+                      display: "none", // Chrome, Safari
+                    },
+                  }}
+                spacing={0.5}
+            >
                 {undock? 
                     <IconButton size="medium" sx={{ borderRadius : 0 }} onClick={() => setUndock(false)}>
                         <CallReceivedTwoToneIcon fontSize="medium"/>
@@ -134,55 +145,47 @@ export const UndockableConsole = observer(() => {
                         <OpenInBrowserTwoToneIcon fontSize="medium"/>
                     </IconButton>
                 }
-                <Box key='console-window-clear-button-box' sx={{ pl : 3 }}>
-                    <Button 
-                        id='console-window-clear-button'
-                        variant='outlined' 
-                        size='large' 
-                        onClick={clearOutput}
-                        sx={{ borderColor : 'GrayText' }}
-                    >
-                        Clear Output
-                    </Button>
-                </Box>
-                <Box key='console-window-json-download-box' sx = {{ pl : 2 }}>
-                    <Stack direction="row">
-                        <Box sx ={{ pr : 2 }}>
-                            <Stack direction="row">
-                                <ButtonGroup> 
-                                    <Button size="large" variant="text" disabled>
-                                        Last Response
-                                    </Button>                
-                                    <IconButton 
-                                        onClick={openLastResponseInNewTab} 
-                                        size="medium" 
-                                        sx={{ borderRadius : 0 }}
-                                    >
-                                        <OpenInNewTwoToneIcon fontSize="medium"/> 
-                                    </IconButton>
-                                    <IconButton 
-                                        onClick={downloadLastResponse} 
-                                        size="medium" 
-                                        sx={{ borderRadius : 0 }}
-                                    >
-                                        <DownloadIcon fontSize="medium"/> 
-                                    </IconButton>
-                                </ButtonGroup>
-                            </Stack>
-                        </Box>
-                        <Stack direction="row">
-                            <Button size="large" variant="text" disabled>
-                                CONSOLE ENTRIES
-                            </Button>    
-                            <IconButton onClick={openResponseInNewTab} size="medium" sx={{ borderRadius : 0 }}>
-                                <OpenInNewTwoToneIcon fontSize="medium"/> 
-                            </IconButton>
-                            <IconButton onClick={downloadResponse} size="medium" sx={{ borderRadius : 0 }}>
-                                <DownloadIcon fontSize="medium"/> 
-                            </IconButton>
-                        </Stack>
-                    </Stack>
-                </Box>
+                <Button 
+                    id='console-window-clear-button'
+                    variant='outlined' 
+                    size='large' 
+                    onClick={clearOutput}
+                    sx={{ borderColor : 'GrayText' }}
+                >
+                    Clear Output
+                </Button>
+                <Stack direction="row">
+                    <ButtonGroup> 
+                        <Button size="large" variant="text" disabled>
+                            Last Response
+                        </Button>                
+                        <IconButton 
+                            onClick={openLastResponseInNewTab} 
+                            size="medium" 
+                            sx={{ borderRadius : 0 }}
+                        >
+                            <OpenInNewTwoToneIcon fontSize="medium"/> 
+                        </IconButton>
+                        <IconButton 
+                            onClick={downloadLastResponse} 
+                            size="medium" 
+                            sx={{ borderRadius : 0 }}
+                        >
+                            <DownloadIcon fontSize="medium"/> 
+                        </IconButton>
+                    </ButtonGroup>
+                </Stack>
+                <Stack direction="row">
+                    <Button size="large" variant="text" disabled>
+                        CONSOLE ENTRIES
+                    </Button>    
+                    <IconButton onClick={openResponseInNewTab} size="medium" sx={{ borderRadius : 0 }}>
+                        <OpenInNewTwoToneIcon fontSize="medium"/> 
+                    </IconButton>
+                    <IconButton onClick={downloadResponse} size="medium" sx={{ borderRadius : 0 }}>
+                        <DownloadIcon fontSize="medium"/> 
+                    </IconButton>
+                </Stack>
                 <Stack direction="row">
                     <Button size="large" variant="text" disabled>
                         Stringify Output
@@ -195,51 +198,47 @@ export const UndockableConsole = observer(() => {
                         sx={{ borderRadius : 0 }}
                     />
                 </Stack>
-                <FormControl id='console-window-font-size-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-font-size-selector-label">Font Size</InputLabel>
-                    <Select
-                        id="console-window-font-size-selector"
-                        label="Font Size"
-                        value={consoleOutputFontSize}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleFontSizeChange}
-                    >
-                        {allowedConsoleFontSizes.map((value : string) => 
-                            <MenuItem key={"console-window-font-size-selector-"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl id='console-window-size-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-size-selector-label">Window Size</InputLabel>
-                    <Select
-                        id="console-window-size-selector"
-                        label="Window Size"
-                        value={consoleWindowSize}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleWindowSizeChange}
-                    >
-                        {allowedConsoleWindowSizes.map((value : string) => 
-                            <MenuItem key={"console-window-size-selector-"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl id='console-window-max-entries-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-max-entries-selector-label">Max Entries</InputLabel>
-                    <Select
-                        id="console-window-max-entries-selector"
-                        label="Max Entries"
-                        value={consoleMaxEntries}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleMaxEntries}
-                    >
-                        {allowedConsoleMaxEntries.map((value : string) => 
-                            <MenuItem key={"console-window-max-entries-selector"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
+                <Stack direction="row" spacing={2} sx={{ pt: 0.75 }} >
+                    <FormControl id='console-window-font-size-form'>
+                        <InputLabel id="console-window-font-size-selector-label">Font Size</InputLabel>
+                        <Select
+                            id="console-window-font-size-selector"
+                            label="Font Size"
+                            value={consoleOutputFontSize}      
+                            sx={{ width : 80 }}
+                            onChange={handleFontSizeChange}
+                        >
+                            {allowedConsoleFontSizes.map((value : string) => 
+                                <MenuItem key={"console-window-font-size-selector-"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl id='console-window-size-form'>
+                        <InputLabel id="console-window-size-selector-label">Window Size</InputLabel>
+                        <Select
+                            id="console-window-size-selector"
+                            label="Window Size"
+                            value={consoleWindowSize}
+                            sx={{ width : 100 }}
+                            onChange={handleWindowSizeChange}
+                        >
+                            {allowedConsoleWindowSizes.map((value : string) => 
+                                <MenuItem key={"console-window-size-selector-"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl id='console-window-max-entries-form'>
+                        <InputLabel id="console-window-max-entries-selector-label">Max Entries</InputLabel>
+                        <Select
+                            id="console-window-max-entries-selector"
+                            label="Max Entries"
+                            value={consoleMaxEntries}
+                            sx={{ width : 100 }}
+                            onChange={handleMaxEntries}
+                        >
+                            {allowedConsoleMaxEntries.map((value : string) => 
+                                <MenuItem key={"console-window-max-entries-selector"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                </Stack>
             </Stack>
             {undock?
                 <NewWindow
@@ -284,7 +283,6 @@ export const ConsoleOutput = ( { consoleWindowSize, consoleEntries, consoleOutpu
                 height : consoleWindowSize === "expand always" ? undefined : Number(consoleWindowSize),
                 overflow  : 'scroll',
                 border : '1px solid grey',
-                flexGrow : 1, display : 'flex'
             }}
         >
             <Console 
@@ -602,17 +600,19 @@ export const ErrorBoundary = observer(() => {
     const thing = useContext(ThingManager) as Thing
 
     return (
-        <Stack id='error-viewer-box-for-padding' sx={{ pt : 1 }}>
-            {thing.errorMessage? 
+        <>
+        {thing.errorMessage? 
+            <Stack id='error-viewer-box-for-padding' sx={{ pt : 1 }}>
                 <Divider id="client-output-console-title">
                     <Typography variant="button" color="GrayText">DETAILED ERRORS</Typography>
-                </Divider> : null
-            }
-            <ErrorViewer 
-                errorMessage={thing.errorMessage} 
-                errorTraceback={thing.errorTraceback}
-            />
-        </Stack>     
+                </Divider> 
+                <ErrorViewer 
+                    errorMessage={thing.errorMessage} 
+                    errorTraceback={thing.errorTraceback}
+                />
+            </Stack> : null     
+        }
+        </>
     )
 })
 

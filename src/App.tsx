@@ -15,13 +15,11 @@ import React from "react";
 
 const App = () => {
 
-    return (
-        <Box id='main-layout' sx={{ display : 'flex', flexGrow : 1, alignItems : 'center'}}>
-            <ThemeProvider theme={theme}>      
-                <ThingClient />
-                <OnLoadMessage />
-            </ThemeProvider>
-        </Box>
+    return (   
+        <ThemeProvider theme={theme}>      
+            <ThingClient />
+            <OnLoadMessage />
+        </ThemeProvider>
     )
 }
 

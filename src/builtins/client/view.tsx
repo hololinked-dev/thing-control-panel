@@ -3,8 +3,6 @@ import {  useState, useRef, useCallback, useContext, createContext, useEffect } 
 import * as React from "react";
 import { observer } from "mobx-react-lite";
 import '../../lib/wot-bundle.min.js';
-// import '../../lib/types/index.d.ts';
-// import Wot from '../../lib/dist/wot-bundle.min.js';
 // Custom functional libraries
 import { EventInformation, ActionInformation, PropertyInformation, ResourceInformation, Thing} from './state'
 import { AppSettings, ClientSettingsType, defaultClientSettings } from "./app-settings.js";
@@ -39,7 +37,7 @@ export const ThingViewer = () => {
     return (
         <Stack
             id="viewer-main-vertical-layout"
-            sx={{ flexGrow: 3, display : 'flex', pl : 3, pr : 3 }}
+            sx={{ pl: 1, pr: 1 }}
         >  
             <FunctionalitiesView />
             <ErrorBoundary />
@@ -58,7 +56,7 @@ export const Locator = observer(() => {
     const [loadingThing, setLoadingThing] = useState<boolean>(false)
 
     const thing = useContext(ThingManager) as Thing
-    const { settings } = useContext(PageContext) as PageProps
+    const { settings, showSettings, setShowSettings, setShowSidebar } = useContext(PageContext) as PageProps
 
     const fetchThing = useCallback(async(currentURL : string) => {
         setLoadingThing(true)
@@ -73,11 +71,10 @@ export const Locator = observer(() => {
                 console.log(thing.errorMessage)
             if(thing.errorTraceback)
                 console.log(thing.errorTraceback)
-        } else {
-            if (window.location.hash && currentURL === window.location.hash.substring(1)) {
-                // load successful, remove hash
-                window.location.hash = '';
-            }
+        } 
+        else if (window.location.hash && currentURL === window.location.hash.substring(1)) {
+            // load successful, remove hash
+            window.location.hash = '';
         }
         setLoadingThing(false)
     }, [settings])
@@ -89,7 +86,20 @@ export const Locator = observer(() => {
     }, [])
 
     return (
-        <Stack id="locator-horizontal-layout" direction="row" sx={{ flexGrow : 1, display : 'flex' }}>
+        <Stack id="locator-horizontal-layout" direction="row" sx={{pb: 1 }}>
+            <Box>
+                <IconButton id='view-sidebar-icon' sx={{ borderRadius : 0 }} onClick={() => setShowSidebar(true)}>
+                    <MenuIcon />
+                </IconButton>
+                {!showSettings ?
+                    <IconButton id='show-settings-icon' onClick={() => setShowSettings(true)} sx={{ borderRadius : 0 }}>
+                        <SettingsTwoToneIcon />
+                    </IconButton> : 
+                    <IconButton id='hide-settings-icon' onClick={() => setShowSettings(false)} sx={{ borderRadius : 0 }}>
+                        <ArrowBackTwoToneIcon />
+                    </IconButton>
+                }
+            </Box>
             <LocatorAutocomplete 
                 existingURLs={existingURLs}
                 currentURL={currentURL}
@@ -97,7 +107,7 @@ export const Locator = observer(() => {
                 editURLsList={modifyOptions}
                 fetchThing={fetchThing}
             />
-            <Box id="loader-button-options-box" sx={{ flexGrow: 0.01, display : 'flex', pb : 3}} >
+            <Box id="loader-button-options-box" sx={{ display : 'flex' }} >
                 <Button
                     id="load-thing-using-url-locator-button"
                     size="small"
@@ -174,7 +184,6 @@ const LocatorAutocomplete = ({
             renderInput={(params) =>
                 <TextField
                     label="Thing Description URL"
-                    variant="filled"
                     error={!thing.fetchSuccessful}
                     sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
                     onChange={(event) => setCurrentURL(event.target.value)}
@@ -249,10 +258,7 @@ const FunctionalitiesView = observer(() => {
     }, [])
 
     return(
-        <Stack
-            direction='row'
-            sx={{ flexGrow : 1, display : 'flex' }}
-        >
+        <Stack direction='row'>
             <Stack>
                 {undock >= 0?
                     <IconButton id='undock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={dockWindow}>
@@ -279,7 +285,8 @@ const FunctionalitiesView = observer(() => {
                         borderRight: tabOrientation === 'vertical'? 3 : 1,
                         borderBottom: tabOrientation === 'vertical'? 1 : 3,
                         flexGrow : tabOrientation === 'vertical'? null : 1,
-                        borderColor: 'divider'
+                        borderColor: 'divider',
+                        width: tabOrientation === 'vertical'? 150 : null
                     }}
                 >
                     {thingOptions.map((name : string) =>
@@ -294,7 +301,7 @@ const FunctionalitiesView = observer(() => {
                 </Tabs>
                 <Box
                     sx={{
-                        resize : 'vertical', height : thing.info.id? 400 : null,
+                        resize : 'vertical', height : thing.info.id? 300 : null,
                         overflow : 'auto', flexGrow : 1, border : 1, borderColor : 'divider'
                     }}
                 >
@@ -401,7 +408,6 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                     id="interaction-affordance-objects-list"
                     dense
                     disablePadding
-                    sx={{ flexGrow : 1 }}
                 >
                     {objects.map((object : ResourceInformation, index : number) => {
                         return (
@@ -478,25 +484,30 @@ export type PageProps = {
     updateSettings : React.Dispatch<React.SetStateAction<ClientSettingsType>>
     showSettings : boolean
     setShowSettings : React.Dispatch<React.SetStateAction<boolean>> | Function
+    showSidebar : boolean
+    setShowSidebar : React.Dispatch<React.SetStateAction<boolean>> | Function
     updateLocalStorage : (value : any) => void
 }
-
 export const ThingManager = createContext<Thing | null>(null)
 export const PageContext = createContext<any>({
     settings : defaultClientSettings,
     updateSettings : () => {},
     showSettings : false,
     setShowSettings : () => {},
+    setShowSidebar : () => {},  
     updateLocalStorage : (_ : any) => {},
 })
 
 export const ThingClient = () => {
 
-    const [_existingSettings, updateLocalStorage] = useLocalStorage('thing-viewer-settings', defaultClientSettings)
-    const [settings, updateSettings] = useState<ClientSettingsType>(_existingSettings)
     const [showSettings, setShowSettings] = useState<boolean>(false)
     const [showSidebar, setShowSidebar] = useState(false)
-    const [pageState, _] = useState({ settings, updateSettings, showSettings, setShowSettings, updateLocalStorage })
+
+    const [_existingSettings, updateLocalStorage] = useLocalStorage('thing-viewer-settings', defaultClientSettings)
+    const [settings, updateSettings] = useState<ClientSettingsType>(_existingSettings)
+    
+    const pageState = { settings, updateSettings, showSettings, setShowSettings, 
+                    showSidebar, setShowSidebar, updateLocalStorage }
     const thing = useRef<Thing>(new Thing())
 
     /* 
@@ -513,9 +524,10 @@ export const ThingClient = () => {
             // @ts-expect-error
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
+
             const IsOurWebsite = window.location.hostname.endsWith('hololinked.dev') || window.location.hostname.endsWith('hololinked.net')
             const IsSSLWebsite = window.location.hostname.endsWith('hololinked.dev')
-   
+                
             try {
                 if((IsOurWebsite && IsSSLWebsite) || (!IsOurWebsite && appConfig.useSSL)){
                     // @ts-expect-error
@@ -550,36 +562,17 @@ export const ThingClient = () => {
 
 
     return (
-        <Box
-            id='client-layout-box'
-            sx={{pt : 3, display : 'flex', flexGrow : 1, pb : 5}}
-        >
+        <Box id='client-layout-box' sx={{ pt: 0.5 }}>
             <PageContext.Provider value={pageState}>
                 <ThingManager.Provider value={thing.current}>
-                    <Stack id="thing-viewer-page-layout" sx={{ flexGrow: 1, display: 'flex'}}>
-                        <Stack direction="row" sx={{ flexGrow: 1, display : 'flex' }}>
-                            <Box sx={{ display : 'flex', pb : 3 }}>
-                                <IconButton id='view-sidebar-icon' sx={{ borderRadius : 0 }} onClick={() => setShowSidebar(true)}>
-                                    <MenuIcon />
-                                </IconButton>
-                                {!showSettings ?
-                                    <IconButton id='show-settings-icon' onClick={() => setShowSettings(true)} sx={{ borderRadius : 0 }}>
-                                        <SettingsTwoToneIcon />
-                                    </IconButton> : 
-                                    <IconButton id='hide-settings-icon' onClick={() => setShowSettings(false)} sx={{ borderRadius : 0 }}>
-                                        <ArrowBackTwoToneIcon />
-                                    </IconButton>
-                                }
-                            </Box>
-                            <Locator />
-                        </Stack>
+                    <Stack id="thing-viewer-page-layout">
+                        <Locator />
                         {showSettings?
-                            <AppSettings globalState={null} />
-                            : 
+                            <AppSettings globalState={null} /> : 
                             <ThingViewer />
                         }
-                        <Sidebar open={showSidebar} setOpen={setShowSidebar} />
                     </Stack>
+                    <Sidebar open={showSidebar} setOpen={setShowSidebar} />
                 </ThingManager.Provider>
             </PageContext.Provider>
         </Box>
