@@ -16,7 +16,7 @@ import { downloadJSON, openJSONinNewTab, asyncRequest } from "../utils";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
 import { ErrorViewer } from "../reuse-components";
 import NewWindow from "react-new-window";
-import { PageContext, PageProps, ThingManager } from "./view";
+import { PageContext, PageProps, ThingManager } from "./index";
 import { Thing } from "./state";
 
 
@@ -617,7 +617,6 @@ export const ErrorBoundary = observer(() => {
         </>
     )
 })
-
 
 
 // export const StatusBar = observer(( { thing } : { thing : Thing }) => {

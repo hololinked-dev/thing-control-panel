@@ -8,7 +8,7 @@ import "@fontsource/roboto/700.css";
 import { Box, Slide, Snackbar, ThemeProvider, Alert } from "@mui/material";
 // Custom component libraries
 import { theme } from "./overall-theme";
-import { ThingClient } from './builtins/client/view';
+import { ThingClient } from './builtins/client/index';
 import React from "react";
 
 

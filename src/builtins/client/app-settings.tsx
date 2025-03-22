@@ -14,7 +14,7 @@ import { stringToObject } from "../utils";
 import { toJS } from "mobx";
 import { allowedConsoleFontSizes, allowedConsoleMaxEntries, allowedConsoleWindowSizes, 
         allowedLogIntervals } from "./output-components";
-import { PageContext, PageProps } from "./view";
+import { PageContext, PageProps } from "./index";
 
 
 

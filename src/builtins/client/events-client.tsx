@@ -7,7 +7,7 @@ import { Button, Stack, ButtonGroup, Link, Tabs, Tab } from "@mui/material"
 // Custom component libraries 
 import { EventInformation } from './state'
 import { Thing } from "./state";
-import { PageContext, PageProps, ThingManager } from "./view";
+import { PageContext, PageProps, ThingManager } from "./index";
 import { ObjectInspector, chromeLight } from "react-inspector";
 import { TabPanel } from "../reuse-components";
 

@@ -1,8 +1,9 @@
-import { Stack, Box, useTheme, TextField } from "@mui/material";
+import { Box, useTheme, TextField } from "@mui/material";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
 import "ace-builds/src-noconflict/ext-language_tools";
+import { parseActionPayloadWithInterpretation } from "../utils";
 
 
 type InputChoiceProps = {
@@ -18,18 +19,20 @@ export const InputChoice = (props : InputChoiceProps) => {
     const { choice, jsonSchema, value, setValue } = props
 
     switch(choice) {
-        case 'JSON' : return (
-                            <Box id="ace-editor-box" sx= {{ flexGrow : 1 }}>
+        case 'code-editor' : return (
+                            <Box id="ace-editor-box" sx= {{ flexGrow : 1, pb: 1 }}>
                                 <AceEditor
                                     name="client-json-input"
                                     mode="json"
                                     theme="crimson_editor"
                                     value={
                                         value? value : 
-                                            jsonSchema.type === 'object'? 
-                                            jsonSchema.properties ? 
-                                            `{${Object.keys(jsonSchema.properties).map(key => `\n\t"${key}": `).join(',').slice(0, -1)}\n}` 
-                                            : '' : ''
+                                            jsonSchema && jsonSchema.type && jsonSchema.properties ?
+                                            `{${Object.keys(jsonSchema.properties).map(key => 
+                                                `\n\t"${key}": ${jsonSchema.properties[key].default ? 
+                                                    JSON.stringify(jsonSchema.properties[key].default) : ''}`
+                                            ).join(',')}\n}` 
+                                            : '' 
                                     }
                                     onChange={(newValue) => setValue(newValue)}
                                     fontSize={18}
@@ -40,9 +43,8 @@ export const InputChoice = (props : InputChoiceProps) => {
                                     style={{
                                         backgroundColor: theme.palette.grey[100],
                                         maxHeight: 175,
-                                        overflow: 'scroll',
-                                        scrollBehavior: 'smooth',
                                         width: "100%",
+                                        border: '1px dashed black'
                                     }}
                                     setOptions={{
                                         enableBasicAutocompletion: true,
@@ -60,7 +62,11 @@ export const InputChoice = (props : InputChoiceProps) => {
                             multiline
                             size="small"
                             maxRows={300}
-                            onChange={(event) => setValue(event.target.value)}
+                            onChange={(event) => setValue(
+                                                    parseActionPayloadWithInterpretation(
+                                                            event.target.value, jsonSchema)
+                                                )
+                                    }
                             helperText="press enter to expand"
                             sx={{ flexGrow: 1 }}
                         />

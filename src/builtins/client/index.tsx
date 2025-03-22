@@ -7,17 +7,11 @@ import '../../lib/wot-bundle.min.js';
 import { EventInformation, ActionInformation, PropertyInformation, ResourceInformation, Thing} from './state'
 import { AppSettings, ClientSettingsType, defaultClientSettings } from "./app-settings.js";
 // Internal & 3rd party component libraries
-import { Box, Button, Stack, Tab, Tabs, Typography, TextField, Divider,
-    IconButton, Autocomplete, List, ListItem, ListItemButton, ListItemText, CircularProgress } from "@mui/material";
-import SaveTwoToneIcon from '@mui/icons-material/SaveTwoTone';
-import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
-import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
-import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Box, Stack, Tab, Tabs, Typography, Divider,
+    IconButton, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
-import MenuIcon from '@mui/icons-material/Menu';
 import NewWindow from "react-new-window";
 // Custom component libraries
 import { TabPanel } from "../reuse-components";
@@ -26,9 +20,10 @@ import { SelectedActionWindow } from "./action-client";
 import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
-import { useAutoCompleteOptionsFromLocalStorage, useLocalStorage } from "../hooks";
+import { useLocalStorage } from "../hooks";
 import { Sidebar } from "../sidebar.js";
 import { appConfig } from "../../../app.config.js";
+import { Locator } from "./locator.js";
 
 
 
@@ -43,177 +38,6 @@ export const ThingViewer = () => {
         </Stack>
     )
 }
-
-
-
-export const Locator = observer(() => {
-
-    const [existingURLs, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('thing-url-text-input')
-    const [currentURL, setCurrentURL] = useState<string>(window.location ? window.location.hash ? window.location.hash.substring(1) : '' : '')
-    const [loadingThing, setLoadingThing] = useState<boolean>(false)
-
-    const thing = useContext(ThingManager) as Thing
-    const { settings, showSettings, setShowSettings, setShowSidebar } = useContext(PageContext) as PageProps
-
-    const fetchThing = useCallback(async(currentURL : string) => {
-        setLoadingThing(true)
-        await thing.fetch(currentURL, settings.defaultEndpoint)
-        if(!thing.fetchSuccessful) {
-            console.log("could not load thing")
-            if(settings.console.stringifyOutput)
-                console.log("last response from loading thing - ", JSON.stringify(thing.lastResponse, null, 2))
-            else 
-                console.log("last response from loading thing - ", thing.lastResponse)
-            if(thing.errorMessage)
-                console.log(thing.errorMessage)
-            if(thing.errorTraceback)
-                console.log(thing.errorTraceback)
-        } 
-        else if (window.location.hash && currentURL === window.location.hash.substring(1)) {
-            // load successful, remove hash
-            window.location.hash = '';
-        }
-        setLoadingThing(false)
-    }, [settings])
-
-    useEffect(() => {
-        if(!currentURL)
-            return     
-        fetchThing(currentURL)
-    }, [])
-
-    return (
-        <Stack id="locator-horizontal-layout" direction="row" sx={{pb: 1 }}>
-            <Box>
-                <IconButton id='view-sidebar-icon' sx={{ borderRadius : 0 }} onClick={() => setShowSidebar(true)}>
-                    <MenuIcon />
-                </IconButton>
-                {!showSettings ?
-                    <IconButton id='show-settings-icon' onClick={() => setShowSettings(true)} sx={{ borderRadius : 0 }}>
-                        <SettingsTwoToneIcon />
-                    </IconButton> : 
-                    <IconButton id='hide-settings-icon' onClick={() => setShowSettings(false)} sx={{ borderRadius : 0 }}>
-                        <ArrowBackTwoToneIcon />
-                    </IconButton>
-                }
-            </Box>
-            <LocatorAutocomplete 
-                existingURLs={existingURLs}
-                currentURL={currentURL}
-                setCurrentURL={setCurrentURL}
-                editURLsList={modifyOptions}
-                fetchThing={fetchThing}
-            />
-            <Box id="loader-button-options-box" sx={{ display : 'flex' }} >
-                <Button
-                    id="load-thing-using-url-locator-button"
-                    size="small"
-                    onClick={async() => await fetchThing(currentURL)}
-                    sx={{ borderRadius : 0 }}
-                >
-                    Load
-                    {loadingThing? <Box sx={{ pl : 1, pt : 0.5 }}><CircularProgress size={20} /></Box>: null }
-                </Button>
-                <Divider orientation="vertical" />
-                <IconButton
-                    id='save-thing-url'
-                    sx={{ borderRadius : 0 }}
-                    onClick={() => modifyOptions(currentURL, 'ADD')}
-                >
-                    <SaveTwoToneIcon />
-                </IconButton>
-                <IconButton
-                    id="open-resource-json-in-new-tab"
-                    onClick={() => window.open(
-                        settings.defaultEndpoint? currentURL + settings.defaultEndpoint :
-                        currentURL )}
-                    sx = {{ borderRadius : 0 }}
-                >
-                    <OpenInNewTwoToneIcon />
-                </IconButton>
-                <Divider orientation="vertical"></Divider>
-                <Button
-                    id="clear-thing"
-                    size="small"
-                    onClick={() => thing.clearState()}
-                    sx = {{ borderRadius : 0 }}
-                >
-                    Clear
-                </Button>
-            </Box>
-        </Stack>
-    )
-})
-
-
-
-type LocatorAutocompleteProps = {
-    existingURLs : string[]
-    currentURL : string
-    setCurrentURL : React.Dispatch<React.SetStateAction<string>>
-    editURLsList : (inputURL : string, operation : 'ADD' | 'REMOVE') => void
-    fetchThing : (currentURL : string) => void
-}
-
-const LocatorAutocomplete = ({ 
-    existingURLs, 
-    currentURL, 
-    setCurrentURL, 
-    editURLsList,
-    fetchThing
-} : LocatorAutocompleteProps) => {
-
-    // show delete button at given option
-    const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
-    const thing = useContext(ThingManager) as Thing
-
-    return (
-        <Autocomplete
-            id="locator-autocomplete"
-            freeSolo
-            disablePortal
-            autoComplete
-            size="small"
-            onChange={(_, name) => {setCurrentURL(name as string)}}
-            value={currentURL}
-            options={existingURLs}
-            sx={{ flexGrow : 1, display: 'flex'}}
-            renderInput={(params) =>
-                <TextField
-                    label="Thing Description URL"
-                    error={!thing.fetchSuccessful}
-                    sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
-                    onChange={(event) => setCurrentURL(event.target.value)}
-                    onKeyDown={async (event) => {
-                        if (event.key === 'Enter') {
-                            await fetchThing(currentURL)
-                        }
-                    }}
-                    {...params}
-                />}
-            renderOption={(props, option : any, {}) => (
-                <li
-                    {...props}
-                    onMouseOver={() => setAutocompleteShowDeleteIcon(option)}
-                    onMouseLeave={() => setAutocompleteShowDeleteIcon('')}
-                >
-                    <Typography
-                        sx={{
-                            display : 'flex', flexGrow : 1,
-                            fontWeight : option === autocompleteShowDeleteIcon? 'bold' : null
-                        }}
-                    >
-                        {option}
-                    </Typography>
-                    {option === autocompleteShowDeleteIcon?
-                    <IconButton size="small" onClick={() => editURLsList(option, 'REMOVE')}>
-                        <DeleteForeverIcon fontSize="small" />
-                    </IconButton> : null }
-                </li>)}
-            />
-    )
-}
-
 
 
 const thingOptions = ['Properties', 'Actions', 'Events', 'Doc/Description']
@@ -470,12 +294,10 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
 
 
 
-type InteractionAffordanceSelectProps = {
+export const InteractionAffordanceSelect = ({ object, type } : {
     object : ResourceInformation
     type : string
-}
-
-export const InteractionAffordanceSelect = ({ object, type } : InteractionAffordanceSelectProps) => {
+}) => {
     switch(type) {
         case 'Events' : return <SelectedEventWindow event={object as EventInformation} />                
         case 'Actions' : return <SelectedActionWindow action={object as ActionInformation} />                

@@ -10,15 +10,15 @@ import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup,
 // Custom component libraries 
 import { TabPanel } from "../reuse-components";
 import { PropertyInformation, Thing } from "./state";
-import { PageContext, PageProps, ThingManager } from "./view";
-import { ObjectInspector } from "react-inspector";
+import { PageContext, PageProps, ThingManager } from "./index";
 import { InputChoice } from "./input-components";
+import { TDDocViewer } from "./doc-viewer";
 
 
 
 const propertyOptions = ['Execute', 'Doc']
 
-export const SelectedPropertyWindow = ( { property } : { property : PropertyInformation}) => {
+export const SelectedPropertyWindow = ({ property } : { property : PropertyInformation}) => {
     // No need to use observer HOC as either property prop changes or child components of this component 
     // read and manipulate client state 
     // const thing = useContext(ThingManager) as Thing
@@ -32,7 +32,7 @@ export const SelectedPropertyWindow = ( { property } : { property : PropertyInfo
     }, [])
 
     return (
-        <Stack id="selected-property-layout">
+        <Stack id="selected-property-layout" sx={{ flexGrow: 1, display: 'flex' }}>
             <Tabs
                 id="selected-property-options-tab"
                 variant="scrollable"
@@ -69,29 +69,20 @@ export const SelectedPropertyWindow = ( { property } : { property : PropertyInfo
 
 
 
-type PropertyTabComponentsProps = { 
+export const PropertyTabComponents = ({ tab, property } : { 
     tab : string
     property : PropertyInformation
-}
-
-export const PropertyTabComponents = ( { tab, property } : PropertyTabComponentsProps) => {
-    const thing = useContext(ThingManager) as Thing
+}) => {
+    
     switch(tab) {
-        case "Execute"  : return (
-                                <RWO property={property}></RWO>
-                            )
-        default : return (
-                        <ObjectInspector 
-                            data={thing.td.properties[property.name]}
-                            expandLevel={3} 
-                        />
-                    ) 
+        case "Execute" : return <RWO property={property}></RWO> 
+        default : return <TDDocViewer resource={property} type="property"></TDDocViewer>
     }
 }
 
 
 
-export const RWO = ( { property } : { property : PropertyInformation}) => {
+export const RWO = ({ property } : { property: PropertyInformation }) => {
     // no need observer HOC as well
     const thing = useContext(ThingManager) as Thing
     const { settings } = useContext(PageContext) as PageProps
@@ -214,7 +205,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
 
 
     return (
-        <Stack id="property-rw-client" sx={{ pt: 1 }}>
+        <Stack id="property-rw-client" sx={{ pt: 1, flexGrow: 1, display: 'flex'  }}>
             {property.readOnly? null : 
                 <InputChoice 
                     jsonSchema={property} 
@@ -226,7 +217,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
             }
             <Stack 
                 id='property-rw-client-options-layout' 
-                spacing={1.5} 
+                spacing={1} 
                 useFlexGap 
                 direction="row" 
                 sx={{ flexWrap: 'wrap' }}
@@ -240,7 +231,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                             onChange={handleInputSelection}
                         >
                             <FormControlLabel value="RAW" control={<Radio size="small" />} label="raw" />
-                            <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
+                            <FormControlLabel value="code-editor" control={<Radio size="small" />} label="code editor" />
                         </RadioGroup>
                     </FormControl>
                 }
