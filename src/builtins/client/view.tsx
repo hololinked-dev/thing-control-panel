@@ -229,7 +229,7 @@ const FunctionalitiesView = observer(() => {
     const [undock, setUndock] = useState<number>(-1)
     const [duplicates, setDuplicates] = useState<number[]>([])
     const undockedTab = useRef<number>(undock)
-    const [tabOrientation, _] = useState<"vertical" | "horizontal">(settings.tabOrientation)
+    const [tabOrientation, _] = useState<"vertical" | "horizontal">(window.innerWidth < 600 ? "horizontal" : settings.tabOrientation)
 
     const handleTabChange = useCallback(
         (_: React.SyntheticEvent, newValue: number) => {
@@ -273,7 +273,10 @@ const FunctionalitiesView = observer(() => {
                     <CopyAllTwoToneIcon fontSize="small"/>
                 </IconButton>
             </Stack>
-            <Stack sx={{ flexGrow : 1, display : 'flex' }} direction={tabOrientation === 'vertical'? 'row' : 'column'}>
+            <Stack 
+                sx={{ flexGrow : 1, display : 'flex', overflowX: 'auto' }} 
+                direction={tabOrientation === 'vertical'? 'row' : 'column'}
+            >
                 <Tabs
                     id="thing-options-tabs"
                     variant="scrollable"
@@ -302,7 +305,7 @@ const FunctionalitiesView = observer(() => {
                 <Box
                     sx={{
                         resize : 'vertical', height : thing.info.id? 300 : null,
-                        overflow : 'auto', flexGrow : 1, border : 1, borderColor : 'divider'
+                        flexGrow : 1, border : 1, borderColor : 'divider', overflow: 'hidden'
                     }}
                 >
                 {thingOptions.map((name : string, index : number) => {
@@ -451,7 +454,7 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
             <Divider orientation="vertical" sx={{ borderWidth : 2 }} />
             <Box sx={{ width : "50%", pl : 2, pr : 1, overflow : 'auto', height : '100%' }}>
                 {
-                    objects[selectedIndex] ?
+                    objects[selectedIndex]?
                     <InteractionAffordanceSelect
                         object={objects[selectedIndex]}
                         type={type}

@@ -148,7 +148,6 @@ export const UndockableConsole = observer(() => {
                 <Button 
                     id='console-window-clear-button'
                     variant='outlined' 
-                    size='large' 
                     onClick={clearOutput}
                     sx={{ borderColor : 'GrayText' }}
                 >
@@ -156,7 +155,7 @@ export const UndockableConsole = observer(() => {
                 </Button>
                 <Stack direction="row">
                     <ButtonGroup> 
-                        <Button size="large" variant="text" disabled>
+                        <Button variant="text" disabled>
                             Last Response
                         </Button>                
                         <IconButton 
@@ -176,7 +175,7 @@ export const UndockableConsole = observer(() => {
                     </ButtonGroup>
                 </Stack>
                 <Stack direction="row">
-                    <Button size="large" variant="text" disabled>
+                    <Button variant="text" disabled>
                         CONSOLE ENTRIES
                     </Button>    
                     <IconButton onClick={openResponseInNewTab} size="medium" sx={{ borderRadius : 0 }}>
@@ -187,23 +186,24 @@ export const UndockableConsole = observer(() => {
                     </IconButton>
                 </Stack>
                 <Stack direction="row">
-                    <Button size="large" variant="text" disabled>
+                    <Button variant="text" disabled>
                         Stringify Output
                     </Button>   
                     <Checkbox
                         id='console-window-stringify-output-checkbox'
-                        size="medium"
+                        size="small"
                         checked={stringifyOutput}
                         onChange={handleStringify}
                         sx={{ borderRadius : 0 }}
                     />
                 </Stack>
-                <Stack direction="row" spacing={2} sx={{ pt: 0.75 }} >
+                <Stack direction="row" spacing={2} sx={{ pt: { xs: 1.25, md: 0.75 } }} >
                     <FormControl id='console-window-font-size-form'>
                         <InputLabel id="console-window-font-size-selector-label">Font Size</InputLabel>
                         <Select
                             id="console-window-font-size-selector"
                             label="Font Size"
+                            size="small"
                             value={consoleOutputFontSize}      
                             sx={{ width : 80 }}
                             onChange={handleFontSizeChange}
@@ -217,6 +217,7 @@ export const UndockableConsole = observer(() => {
                         <Select
                             id="console-window-size-selector"
                             label="Window Size"
+                            size="small"
                             value={consoleWindowSize}
                             sx={{ width : 100 }}
                             onChange={handleWindowSizeChange}
@@ -230,6 +231,7 @@ export const UndockableConsole = observer(() => {
                         <Select
                             id="console-window-max-entries-selector"
                             label="Max Entries"
+                            size="small"
                             value={consoleMaxEntries}
                             sx={{ width : 100 }}
                             onChange={handleMaxEntries}

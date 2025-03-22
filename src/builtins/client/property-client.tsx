@@ -218,27 +218,31 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
 
 
     return (
-        <Stack id="property-rw-client" sx={{ flexGrow : 1, pt: 2 }}>
-            <PropertyInputChoice 
-                id='property-rw-client-input'
-                property={property} 
-                choice={inputChoice} 
-                value={propValue} 
-                setValue={setPropValue}
-                RWHook={RWProp}
-            />
-            <Stack id='property-rw-client-options-layout' direction = "row" sx={{ flexGrow : 1 }}>
-                <FormControl sx={{pl : 2, pt : 2}}> 
-                    <RadioGroup
-                        id="input-choice-group"
-                        row
-                        value={inputChoice}
-                        onChange={handleInputSelection}
-                    >
-                        <FormControlLabel value="RAW" control={<Radio size="small" />} label="raw" />
-                        <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
-                    </RadioGroup>
-                </FormControl>
+        <Stack id="property-rw-client" sx={{ pt: 1 }}>
+            {property.readOnly? null : 
+                <PropertyInputChoice 
+                    id='property-rw-client-input'
+                    property={property} 
+                    choice={inputChoice} 
+                    value={propValue} 
+                    setValue={setPropValue}
+                    RWHook={RWProp}
+                />
+            }
+            <Stack id='property-rw-client-options-layout' direction="row">
+                {property.readOnly? null :
+                    <FormControl sx={{pl: 2, pt: 2}}> 
+                        <RadioGroup
+                            id="input-choice-group"
+                            row
+                            value={inputChoice}
+                            onChange={handleInputSelection}
+                        >
+                            <FormControlLabel value="RAW" control={<Radio size="small" />} label="raw" />
+                            <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
+                        </RadioGroup>
+                    </FormControl>
+                }
                 {/* <Box sx={{ pl : 2, pt: 2, pr: 2, maxWidth : 100 }} >
                     <TextField
                         id='timeout-input'
@@ -252,7 +256,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                 <ButtonGroup 
                     id='rw-buttons'
                     variant="contained"
-                    sx = {{pt :2, pr : 2, pb : 2}}
+                    sx = {{ pt: 2, pr: 1, pb: 2}}
                     disableElevation
                     color="secondary"
                 >
@@ -270,6 +274,10 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                         Write
                     </Button>
                 </ButtonGroup>
+                {property.observable? 
+                    <Observe property={property} skipDataSchemaValidation={skipDataSchemaValidation} />
+                    : null
+                }   
                 <FormControlLabel
                     label="skip data schema validation"
                     control={<Checkbox
@@ -280,7 +288,6 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                     sx={{ pl : 1 }}
                 />
             </Stack>
-            {property.observable? <Observe property={property} skipDataSchemaValidation={skipDataSchemaValidation}></Observe> : null}   
         </Stack>
     )
 }
