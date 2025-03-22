@@ -74,6 +74,7 @@ export class PropertyInformation extends ResourceInformation {
     observable : boolean
     readOnly : boolean
     default : any
+    oneOf: { [key : string] : any }[]
     // following are owr own
     allow_None : boolean
     class_member : boolean

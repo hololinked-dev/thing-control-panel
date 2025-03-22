@@ -35,10 +35,7 @@ import { appConfig } from "../../../app.config.js";
 export const ThingViewer = () => {
 
     return (
-        <Stack
-            id="viewer-main-vertical-layout"
-            sx={{ pl: 1, pr: 1 }}
-        >  
+        <Stack id="viewer-main-vertical-layout" sx={{ pl: 1, pr: 1 }}>  
             <FunctionalitiesView />
             <ErrorBoundary />
             <ResponseLogs />
@@ -435,12 +432,18 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                                                 }}
                                             >
                                                 <span>{object.name}</span>
-                                                {object.type?
-                                                    <span style={{color : 'rgba(0, 0, 0, 0.5)'}}>
-                                                        {object.type}
+                                                {
+                                                // @ts-expect-error
+                                                object.type || object.oneOf ?
+                                                    <span style={{color : 'rgba(0, 0, 0, 0.5)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                        {object.type ? object.type : 
+                                                        (object as PropertyInformation).oneOf ? 
+                                                        (object as PropertyInformation).oneOf.map(item => item.type).join(' | ') 
+                                                        : null
+                                                        }
                                                     </span> 
-                                                    : 
-                                                    null
+                                                    : null
+                                                    
                                                 }
                                             </Typography>
                                         }
@@ -452,7 +455,7 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                 </List>
             </Box>
             <Divider orientation="vertical" sx={{ borderWidth : 2 }} />
-            <Box sx={{ width : "50%", pl : 2, pr : 1, overflow : 'auto', height : '100%' }}>
+            <Box sx={{ width : "50%", pl : 1, pr : 2, overflowY : 'scroll', overflowX: 'auto', height : '100%' }}>
                 {
                     objects[selectedIndex]?
                     <InteractionAffordanceSelect

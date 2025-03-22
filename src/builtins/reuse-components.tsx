@@ -34,7 +34,7 @@ export const TabPanel = (props: TabPanelProps) => {
             }}      
         >
             {value === index && (
-                <Box sx={{ flexGrow: 1, display: 'flex', height : '100%' }}>
+                <Box sx={{ display: 'flex', height : '100%' }}>
                     {children}
                 </Box>
             )}
