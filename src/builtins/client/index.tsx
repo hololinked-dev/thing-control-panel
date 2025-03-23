@@ -110,7 +110,8 @@ const FunctionalitiesView = observer(() => {
                         borderBottom: tabOrientation === 'vertical'? 1 : 3,
                         flexGrow : tabOrientation === 'vertical'? null : 1,
                         borderColor: 'divider',
-                        width: tabOrientation === 'vertical'? 150 : null
+                        width: tabOrientation === 'vertical'? 150 : null,
+                        minWidth: tabOrientation === 'vertical'? 150 : null,
                     }}
                 >
                     {thingOptions.map((name : string) =>
@@ -280,7 +281,7 @@ const InteractionAffordancesView = observer(({ type } : { type : "Properties" | 
             <Box 
                 id="interaction-affordance-object-after-selected-execution-layout"
                 sx={{ 
-                    width : "50%", pl : 1, pr : 2, 
+                    width: '50%', pl : 1, pr : 2, 
                     overflowY : 'scroll', overflowX: 'auto', height : '100%' 
                 }}
             >

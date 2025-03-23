@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import DOMPurify from 'dompurify';
 // Custom functional libraries
 // Internal & 3rd party component libraries
-import { Stack, Typography, 
+import { Box, Stack, Typography, 
 //  Button, TextField, ButtonGroup, IconButton, Autocomplete 
     } from "@mui/material"
 // import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
@@ -15,7 +15,7 @@ import { Stack, Typography,
 // import { PropertyInformation } from './state';
 import { ResourceInformation, Thing } from './state';
 import { PageContext, PageProps, ThingContext } from './index';
-import { ObjectInspector } from 'react-inspector';
+import { chromeLight, ObjectInspector } from 'react-inspector';
 
 
 
@@ -50,9 +50,18 @@ export const TDDocViewer = ({ resource, type } : {
 }) => {
 
     const thing = useContext(ThingContext) as Thing
-
+    const tdFragment = thing.td[type === 'action'? 'actions' : type === 'event' ? 'events' : 'properties'][resource.name]
     return (
-       <ObjectInspector expandLevel={3} data={thing.td[type === 'action'? 'actions' : type === 'event' ? 'events' : 'properties'][resource.name]} /> 
+        <Box sx={{ flexGrow: 1, display: 'flex', p : 1 }}>
+            <ObjectInspector 
+                name={tdFragment.title}
+                expandLevel={2} 
+                data={tdFragment} 
+                // styles={{ }}
+                // @ts-expect-error
+                theme={{...chromeLight, ...({ TREENODE_FONT_SIZE: '16px' })}}
+            /> 
+        </Box>
     )
 }
 

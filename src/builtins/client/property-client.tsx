@@ -6,7 +6,8 @@ import { observer } from "mobx-react-lite";
 import { getFormattedTimestamp,  asyncRequest, parseWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-    RadioGroup, Radio, Checkbox} from "@mui/material";
+    RadioGroup, Radio, Checkbox,
+    Box} from "@mui/material";
 // Custom component libraries 
 import { TabPanel } from "../reuse-components";
 import { PropertyInformation, Thing } from "./state";
@@ -57,10 +58,11 @@ export const SelectedPropertyWindow = ({ property } : { property : PropertyInfor
                         key={"selected-property-options-tabpanel-"+name}
                         tree="selected-property-options-tab"
                         value={propertyOptionsTab} 
-                        index={index} 
+                        index={index}
                     >
                         <PropertyTabComponents tab={name} property={property} />
                     </TabPanel>
+                    
                 )} 
             )} 
         </Stack>
