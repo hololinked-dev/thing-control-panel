@@ -225,6 +225,7 @@ export class Thing {
     servient : any // Wot.Core.Servient
     wot : any // Wot.Core.WoT
     fetchSuccessful : boolean
+    tdURL : string
     // error displays
     errorMessage :  string
     errorTraceback :  string[] | null 
@@ -293,6 +294,7 @@ export class Thing {
                     this.setLastResponse(response.data)
                     this.resetError()
                     this.setFetchSuccessful(true)
+                    this.tdURL = baseurl + endpointURL
                 }
             }
             else if(response.data && response.data.exception) {

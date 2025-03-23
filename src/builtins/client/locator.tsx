@@ -18,6 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useAutoCompleteOptionsFromLocalStorage } from "../hooks";
 import { ThingContext } from "./index";
 import { PageContext, PageProps } from "../../App";
+import { ZoomedInput } from "../reuse-components.js";
 
 
 export const Locator = observer(() => {
@@ -156,6 +157,15 @@ const LocatorAutocomplete = ({
             options={existingURLs}
             sx={{ flexGrow : 1, display: 'flex'}}
             renderInput={(params) =>
+                window.innerWidth < 600 ?
+                <ZoomedInput 
+                    label="Thing Description URL" 
+                    inputValue={currentURL}
+                    setInputValue={setCurrentURL}
+                    error={!thing.fetchSuccessful}
+                    sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
+                    {...params}
+                /> : 
                 <TextField
                     label="Thing Description URL"
                     error={!thing.fetchSuccessful}

@@ -362,14 +362,17 @@ const CustomTablePagination = styled(TablePagination)`
 
 
 
-const ZoomedInput = ({ title, inputValue, setInputValue } : { 
-    title: string, 
+export const ZoomedInput = ({ label, inputValue, setInputValue, error, ...props } : { 
+    label: string, 
     inputValue: string,
     setInputValue : React.Dispatch<React.SetStateAction<string>> 
+    error: boolean,
+    props? : any
 }) => {
     
+    if(!props) props = {}
     const [open, setOpen] = useState(false);
-    const [tempValue, setTempValue] = useState(inputValue); // Temporary value in dialog
+    const [tempValue, setTempValue] = useState(""); // Temporary value in dialog
 
     const handleOpen = () => {
         setTempValue(inputValue); // Keep existing value
@@ -386,32 +389,37 @@ const ZoomedInput = ({ title, inputValue, setInputValue } : {
     }
 
     return (
-        <Dialog open={open} onClose={handleClose} fullWidth>
-            {/* <TextField
+        <>
+            <TextField
                 label={label}
                 value={inputValue}
                 onClick={handleOpen} // Open dialog on click
-                fullWidth
-                size="small"
-            /> */}
-            <DialogTitle>{title}</DialogTitle>
-            <DialogContent>
-                <TextField
-                    autoFocus
-                    fullWidth
-                    size="small"
-                    value={tempValue}
-                    onChange={(e) => setTempValue(e.target.value)}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button size="small" onClick={handleClose}>Cancel</Button>
-                <Button size="small" onClick={handleSave} variant="contained" color="secondary">
-                    Save
-                </Button>
-            </DialogActions>
-        </Dialog>
-        
+                error={error}
+                {...props}
+            />
+            <Dialog open={open} onClose={handleClose} fullWidth>
+                <DialogTitle>{label}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        size="small"
+                        value={tempValue}
+                        error={error}
+                        onChange={(e) => setTempValue(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button size="small" onClick={handleClose}>Cancel</Button>
+                    <Button size="small" onClick={() => setTempValue("")}>Clear</Button>
+                    <Button size="small" onClick={handleSave} variant="contained" color="secondary">
+                        Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     )
 }
 

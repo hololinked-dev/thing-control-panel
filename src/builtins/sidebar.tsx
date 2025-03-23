@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Button, Divider, Drawer, IconButton, Link, Stack, Tooltip, Typography } from "@mui/material"
+import { useContext, useState } from "react";
+import { Button, Divider, Drawer, Icon, IconButton, Link, Stack, Tooltip, Typography } from "@mui/material"
 import GitHubIcon from '@mui/icons-material/GitHub';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import { OpenInNewTwoTone } from "@mui/icons-material";
+import { OpenInNewTwoTone, ShareTwoTone } from "@mui/icons-material";
+import { Thing } from "./client/state";
+import { ThingContext } from "./client";
 
 
 export const Sidebar = ({ open, setOpen }: { open: boolean, setOpen: Function}) => {
@@ -89,6 +91,7 @@ const OnlineThings = () => {
                 SSLThings.map((thing, index) => <OnlineThing key={index} {...thing} />):
                 NoSSLThings.map((thing, index) => <OnlineThing key={index} {...thing} />)
             }
+            <ShareCurrentGUI />
             <Typography fontSize={10}>More coming in due time...</Typography>
         </Stack>
     )
@@ -97,11 +100,10 @@ const OnlineThings = () => {
 
 const OnlineThing = ({ title, link, GUI } : { title : string, link : string, GUI: string }) => {
 
-
     const [tooltipOpen, setTooltipOpen] = useState(false);
 
     return (
-        <Stack direction={'row'} spacing={1}>
+        <Stack direction={'row'} >
             <Tooltip
                 open={tooltipOpen}
                 title="Copied to clipboard!"
@@ -113,7 +115,6 @@ const OnlineThing = ({ title, link, GUI } : { title : string, link : string, GUI
                         setTooltipOpen(true);
                         setTimeout(() => setTooltipOpen(false), 2000);
                     }}
-                    title='copy link to clipboard'
                 >
                     {title}
                 </Button>
@@ -144,7 +145,36 @@ export const Links = () => {
                 title='Support the developer'
             >
                 <VolunteerActivismIcon />
-            </IconButton>
+            </IconButton>     
         </Stack>
+    )
+}
+
+
+const ShareCurrentGUI = () => { 
+
+    const thing = useContext(ThingContext) as Thing
+    const [tooltipOpen, setTooltipOpen] = useState(false);
+    const link = window.location.href + `#${thing.tdURL}`
+
+    if(!thing || !thing.tdURL) return null
+
+    return (
+        <Tooltip
+            open={tooltipOpen}
+            title="Copied to clipboard!"
+            placement="right"
+        >
+            <Button
+                onClick={() =>  {
+                    navigator.clipboard.writeText(link)
+                    setTooltipOpen(true)
+                    setTimeout(() => setTooltipOpen(false), 2000)
+                }}
+                sx={{ alignSelf : 'flex-start' }}
+            >
+                Copy current loaded Thing link
+            </Button>
+        </Tooltip>
     )
 }

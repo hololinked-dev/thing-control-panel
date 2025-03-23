@@ -65,7 +65,7 @@ const OnLoadMessage = () => {
 
     const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
         if (reason === 'clickaway') 
-            return;
+            return
         if (settings.useLocalStorage)             
             updateLocalStorage({ ...settings, showWebsiteWarningAgain: showWarningAgain })
         setOpen(false);
@@ -78,7 +78,6 @@ const OnLoadMessage = () => {
         <Snackbar
             open={open}
             onClose={handleClose}
-            TransitionComponent={(props) => <Slide {...props} direction="up" />}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
             <Alert onClose={handleClose} severity="warning" sx={{ width: '100%' }}>
@@ -95,9 +94,9 @@ const OnLoadMessage = () => {
                         control={
                             <Checkbox size="small" 
                                 onChange={(event) => setShowWarningAgain(!event.target.checked)}
-                                checked={!showWarningAgain}
-                            />
-                        }                
+                                />
+                            }                
+                        checked={!showWarningAgain}
                     /> : null
                 }
             </Alert>

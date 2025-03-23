@@ -4,11 +4,9 @@ import { observer } from "mobx-react-lite";
 import axios from "axios";
 // Custom functional libraries
 // Internal & 3rd party component libraries
-import { Grid, Typography, FormControlLabel, Switch, Divider, Box, 
+import { Grid, Typography, FormControlLabel, Switch, Divider, Box, InputLabel, FormControl, SelectChangeEvent, 
     OutlinedInput, InputAdornment, IconButton, Stack, Checkbox, Select, MenuItem, 
-    InputLabel, FormControl, SelectChangeEvent, 
-    Button,
-    Tooltip} from "@mui/material"
+    Button, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText } from "@mui/material"
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { stringToObject } from "./utils";
@@ -26,7 +24,7 @@ type SettingsProps = {
 }
 
 const SettingsUpdateContext = createContext<SettingsProps | null>(null)
-  
+
 
 type SettingRowProps = {
     title : string 
@@ -63,7 +61,6 @@ export const SettingRow = ( {title, description, children} : SettingRowProps) =>
         </Box>
     )
 }
-
 
 
 const EditableTextSetting = observer(({ settingName, settingURL, initialValue, placeHolder, helperText } : 
@@ -324,7 +321,7 @@ const OtherSettings = () => {
                         tooltip={
                             `uses your browser's local storage to save settings and app data (like saved links to thing descriptions) 
                             permanently, nothing is transferred or stored somewhere else.
-                            If you do not enable this, all settings and app will be lost on page refresh.`.replace(/\s+/g, ' ')
+                            If you do not enable this, all settings and app data will be lost on page refresh.`.replace(/\s+/g, ' ')
                         }
                     />
                 </Grid>
@@ -350,18 +347,43 @@ const updateNestedSetting = (obj: any, keys: string[], value: any) => {
 
 const ClearLocalStorageButton = () => {
 
+    const [open, setOpen] = useState(false);
+
+    const handleClearLocalStorage = () => {
+        clearLocalStorage();
+        setOpen(false);
+    };
+
     return (
-        <Button 
-            sx={{ alignSelf: 'flex-start' }}
-            onClick={() => {
-                if (window.confirm("Are you sure you want to clear local storage?")) 
-                    clearLocalStorage()
-            }}
-            variant='contained'    
-            color='warning'
-        >
-            Clear Local Storage
-        </Button>
+        <>
+            <Button 
+                sx={{ alignSelf: 'flex-start' }}
+                onClick={() => setOpen(true)}
+                variant='contained'    
+                color='warning'
+            >
+                Clear Local Storage 2
+            </Button>
+            <Dialog
+                open={open}
+                onClose={() => setOpen(false)}
+            >
+                <DialogTitle>Confirm</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to clear local storage?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpen(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleClearLocalStorage} color="warning">
+                        Yes
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     )
 }
 
