@@ -106,11 +106,11 @@ const ActionInvokationClient = ({ action } :  {
                     _fullpath += `&fetch_execution_logs=${fetchExecutionLogs}`
             }
             else {
-                data = { 
-                    // fetch_execution_logs : fetchExecutionLogs,
-                    // timeout : timeout,
-                    ...JSON.parse(kwargsValue)
-                }
+                let parsedPayload = JSON.parse(kwargsValue)
+                if(parsedPayload) 
+                    data = parsedPayload
+                else 
+                    data = null 
                 _fullpath = fullpath  
             }
             /* 
@@ -158,14 +158,13 @@ const ActionInvokationClient = ({ action } :  {
                 
             }
             else {
-                console.log("payload for action: ", data)
+                console.log("payload for action:", data)
                 let lastResponse = await thing.client.invokeAction(action.name, data)
                 thing.setLastResponse(lastResponse)
-                if(skipResponseValidation)
-                    lastResponse.ignoreValidation = true
+                lastResponse.ignoreValidation = skipResponseValidation
                 consoleOutput = await lastResponse.value()
-                if(!consoleOutput)
-                    consoleOutput = 'no return value'
+                if(consoleOutput === undefined || consoleOutput === null)
+                    consoleOutput = 'operation performed, no or null return value'
             }       
             if(settings.console.stringifyOutput) 
                 console.log(JSON.stringify(consoleOutput, null, 2))
@@ -192,7 +191,7 @@ const ActionInvokationClient = ({ action } :  {
     }, [timeout, setTimeout])
 
     return (
-        <Stack id='action-execution-client-layout' sx={{ pt: 1, flexGrow: 1, display: 'flex' }}>
+        <Stack id='action-execution-client-layout' sx={{ pt: 1, flexGrow: 1, display: 'flex', pb: 1 }}>
             <InputChoice 
                 choice={inputChoice} 
                 jsonSchema={action.input} 

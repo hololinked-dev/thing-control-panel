@@ -108,7 +108,7 @@ export const RWO = ({ property } : { property: PropertyInformation }) => {
     const RWProp = useCallback(async (mode : 'READ' | 'WRITE' ) => {
         const requestTime = getFormattedTimestamp()
         const requestTime_ = Date.now()
-        let request : AxiosRequestConfig, consoleOutput : string | null = null, response
+        let request : AxiosRequestConfig, consoleOutput : string | null = null, response: any
         try {
             /* 
             order -
@@ -135,16 +135,18 @@ export const RWO = ({ property } : { property: PropertyInformation }) => {
                 response = interaction output
                 console output = received data
                 */
-                if(mode === 'READ') 
+                if(mode === 'READ') {
                     response = await thing.client.readProperty(property.name)
-                else 
-                    response = await thing.client.writeProperty(property.name, 
-                                            parseWithInterpretation(propValue, property.type))    
-                thing.setLastResponse(response)
-                if(response) {
+                    thing.setLastResponse(response)
                     response.ignoreValidation = skipDataSchemaValidation
                     consoleOutput = await response.value()
-                }           
+                }
+                else {
+                    response = await thing.client.writeProperty(property.name, 
+                                        parseWithInterpretation(propValue, property.type))    
+                    thing.setLastResponse(response)
+                    consoleOutput = 'operation performed'
+                }
                 thing.resetError()
             }
             else {

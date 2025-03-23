@@ -116,8 +116,12 @@ export const parseWithInterpretation = (value : any, interpretation : string) =>
                 return jsonValue.toLowerCase() === 'true'
             else if (typeof jsonValue === 'number')   
                 return Boolean(Number(jsonValue))
-            throw new Error('Invalid value for boolean')
+            else if (typeof jsonValue === 'boolean')
+                return jsonValue
+            throw new Error(`Invalid value for boolean, given type: ${typeof jsonValue}. 
+                if you are using input element, try using the code editor`)
         }
+        case 'string': return String(jsonValue)
         default : return jsonValue // String, Bytes, IPAddress, 
         // object & array?
     }

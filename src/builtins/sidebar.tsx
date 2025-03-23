@@ -1,4 +1,5 @@
-import { Button, Divider, Drawer, IconButton, Link, Stack, Typography } from "@mui/material"
+import { useState } from "react";
+import { Button, Divider, Drawer, IconButton, Link, Stack, Tooltip, Typography } from "@mui/material"
 import GitHubIcon from '@mui/icons-material/GitHub';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { OpenInNewTwoTone } from "@mui/icons-material";
@@ -12,7 +13,7 @@ export const Sidebar = ({ open, setOpen }: { open: boolean, setOpen: Function}) 
             open={open}
             onClose={() => setOpen(false)}
         >   
-            <Stack sx={{ minWidth : 250, padding : 2}}>
+            <Stack sx={{ minWidth: 250, padding: 1}}>
                 <Divider><Typography variant='button' color='black'>Online Things</Typography></Divider>
                 <OnlineThings />
                 <Divider />
@@ -64,7 +65,7 @@ const SSLSwappedWebsite = () => {
             <Link 
                 href={IsSSLWebsite() ? nonSSLWebsiteURL : SSLWebsiteURL} 
                 target='_blank' 
-                sx={{ padding : 1}}
+                sx={{ padding : 1 }}
             >   
                 <Typography sx={{ padding : 2, fontSize: 12 }} variant='caption'>
                     Visit SSL-swapped version of the website 
@@ -95,9 +96,27 @@ const OnlineThings = () => {
 
 const OnlineThing = ({ title, link } : { title : string, link : string }) => {
 
+
+    const [tooltipOpen, setTooltipOpen] = useState(false);
+
     return (
         <Stack direction={'row'} spacing={1}>
-            <Button  sx={{ pointerEvents: "none" }} onClick={(e) => e.preventDefault()}>{title}</Button>
+            <Tooltip
+                open={tooltipOpen}
+                title="Copied to clipboard!"
+                placement="right"
+            >
+                <Button 
+                    onClick={() => {
+                        navigator.clipboard.writeText(link);
+                        setTooltipOpen(true);
+                        setTimeout(() => setTooltipOpen(false), 2000);
+                    }}
+                    title='copy link to clipboard'
+                >
+                    {title}
+                </Button>
+            </Tooltip>
             <IconButton 
                 title="Open Counter in new tab"
                 onClick={() => window.open(link, '_blank')}

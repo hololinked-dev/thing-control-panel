@@ -123,9 +123,14 @@ export class PropertyInformation extends ResourceInformation {
     }
 
     // types for which JSON input field should be shown instead of raw input field
-    JSONInputParameterTypes = ['Property', 'ClassSelector', 'Tuple', 'List', 'TypedList', 
+    JSONInputParameterTypes = [
+                    // param and python type
+                    'Property', 'ClassSelector', 'Tuple', 'List', 'TypedList', 
                     'TypedDict', 'Iterable', 'Selector', 'TupleSelector', 'FileSelector', 
-                    'MultiFileSelector', 'TypedKeyMappingsDict']
+                    'MultiFileSelector', 'TypedKeyMappingsDict',
+                    // JSON types
+                    'object', 'array'
+                ]
 
     get chips() : string[] {
         let Chips : string[] = []
@@ -140,7 +145,7 @@ export class PropertyInformation extends ResourceInformation {
         if(this.readOnly)
             return 'RAW'  // check readonly always first
         else if(this.JSONInputParameterTypes.includes(this.type)) 
-            return 'JSON'
+            return 'code-editor'
         return 'RAW'
     }
 }

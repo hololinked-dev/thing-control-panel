@@ -62,11 +62,7 @@ export const InputChoice = (props : InputChoiceProps) => {
                             multiline
                             size="small"
                             maxRows={300}
-                            onChange={(event) => setValue(
-                                                    parseActionPayloadWithInterpretation(
-                                                            event.target.value, jsonSchema)
-                                                )
-                                    }
+                            onChange={(event) => setValue(event.target.value)}
                             helperText="press enter to expand"
                             sx={{ flexGrow: 1 }}
                         />
