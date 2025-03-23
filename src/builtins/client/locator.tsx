@@ -163,6 +163,7 @@ const LocatorAutocomplete = ({
                     inputValue={currentURL}
                     setInputValue={setCurrentURL}
                     error={!thing.fetchSuccessful}
+                    // @ts-ignore
                     sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
                     {...params}
                 /> : 
