@@ -612,6 +612,15 @@ export const ErrorBoundary = observer(() => {
                     errorMessage={thing.errorMessage} 
                     errorTraceback={thing.errorTraceback}
                 />
+                <Box sx={{ pb : 1 }} />
+                <Button
+                    id='error-viewer-clear-button'
+                    variant='outlined'
+                    onClick={() => thing.resetError()}
+                    sx={{ alignSelf: 'flex-start' }}
+                >
+                    Clear Errors
+                </Button>
             </Stack> : null     
         }
         </>

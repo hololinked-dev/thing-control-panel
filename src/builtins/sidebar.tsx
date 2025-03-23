@@ -33,28 +33,29 @@ const SSLWebsiteURL = `https://control-panel.${SSLDomainName}`
 
 const IsSSLWebsite = () => window.location.hostname.endsWith('.dev')
 
-const OscilloscopeSimulatorNoSSL = `${nonSSLWebsiteURL}/#http://examples.${nonSSLDomainName}/simulations/oscilloscope/resources/wot-td`
-const DataSchemaThingNoSSL = `${nonSSLWebsiteURL}/#http://external-examples.${nonSSLDomainName}/data-schema-thing`
-const AdvancedCoffeeMachineNoSSL = `${nonSSLWebsiteURL}/#http://external-examples.${nonSSLDomainName}/advanced-coffee-machine`
-const SpectrometerNoSSL = `${nonSSLWebsiteURL}/#http://examples.${nonSSLDomainName}/simulations/spectrometer/resources/wot-td`
+const OscilloscopeSimulatorNoSSLDevice = `http://examples.${nonSSLDomainName}/simulations/oscilloscope/resources/wot-td`
+const DataSchemaThingNoSSLDevice = `http://external-examples.${nonSSLDomainName}/data-schema-thing`
+const AdvancedCoffeeMachineNoSSLDevice = `http://external-examples.${nonSSLDomainName}/advanced-coffee-machine`
+const SpectrometerNoSSLDevice = `http://examples.${nonSSLDomainName}/simulations/spectrometer/resources/wot-td`
 
-const OscilloscopeSimulatorSSL = `${SSLWebsiteURL}/#https://examples.${SSLDomainName}/simulations/oscilloscope/resources/wot-td`
-const DataSchemaThingSSL = `${SSLWebsiteURL}/#https://external-examples.${SSLDomainName}/data-schema-thing`
-const AdvancedCoffeeMachineSSL = `${SSLWebsiteURL}/#https://external-examples.${SSLDomainName}/advanced-coffee-machine`
-const SpectrometerSSL = `${SSLWebsiteURL}/#https://examples.${SSLDomainName}/simulations/spectrometer/resources/wot-td`
+const OscilloscopeSimulatorSSLDevice = `https://examples.${SSLDomainName}/simulations/oscilloscope/resources/wot-td`
+const DataSchemaThingSSLDevice = `https://external-examples.${SSLDomainName}/data-schema-thing`
+const AdvancedCoffeeMachineSSLDevice = `https://external-examples.${SSLDomainName}/advanced-coffee-machine`
+const SpectrometerSSLDevice = `https://examples.${SSLDomainName}/simulations/spectrometer/resources/wot-td`
+
 
 const SSLThings = [
-    { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorSSL },
-    { title : 'Data Schema Thing', link : DataSchemaThingSSL },
-    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineSSL },
-    { title : 'Spectrometer Simulator', link : SpectrometerSSL }
+    { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorSSLDevice, GUI: `${SSLWebsiteURL}/#${OscilloscopeSimulatorSSLDevice}` },
+    { title : 'Data Schema Thing', link : DataSchemaThingSSLDevice, GUI: `${SSLWebsiteURL}/#${DataSchemaThingSSLDevice}` },
+    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineSSLDevice, GUI: `${SSLWebsiteURL}/#${AdvancedCoffeeMachineSSLDevice}` },
+    { title : 'Spectrometer Simulator', link : SpectrometerSSLDevice, GUI: `${SSLWebsiteURL}/#${SpectrometerSSLDevice}` }
 ]
 
 const NoSSLThings = [
-    { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorNoSSL },
-    { title : 'Data Schema Thing', link : DataSchemaThingNoSSL },
-    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineNoSSL },
-    { title : 'Spectrometer Simulator', link : SpectrometerNoSSL }
+    { title : 'Oscilloscope Simulator', link : OscilloscopeSimulatorNoSSLDevice, GUI: `${nonSSLWebsiteURL}/#${SpectrometerNoSSLDevice}` },
+    { title : 'Data Schema Thing', link : DataSchemaThingNoSSLDevice, GUI: `${nonSSLWebsiteURL}/#${DataSchemaThingNoSSLDevice}` },
+    { title : 'Advanced Coffee Machine', link : AdvancedCoffeeMachineNoSSLDevice, GUI: `${nonSSLWebsiteURL}/#${AdvancedCoffeeMachineNoSSLDevice}` },
+    { title : 'Spectrometer Simulator', link : SpectrometerNoSSLDevice, GUI: `${nonSSLWebsiteURL}/#${SpectrometerNoSSLDevice}` }
 ]
 
 
@@ -85,8 +86,8 @@ const OnlineThings = () => {
         <Stack sx={{ padding : 1}}>
             {
                 IsSSLWebsite() ? 
-                SSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />):
-                NoSSLThings.map((thing, index) => <OnlineThing key={index} title={thing.title} link={thing.link} />)
+                SSLThings.map((thing, index) => <OnlineThing key={index} {...thing} />):
+                NoSSLThings.map((thing, index) => <OnlineThing key={index} {...thing} />)
             }
             <Typography fontSize={10}>More coming in due time...</Typography>
         </Stack>
@@ -94,7 +95,7 @@ const OnlineThings = () => {
 }
 
 
-const OnlineThing = ({ title, link } : { title : string, link : string }) => {
+const OnlineThing = ({ title, link, GUI } : { title : string, link : string, GUI: string }) => {
 
 
     const [tooltipOpen, setTooltipOpen] = useState(false);
@@ -119,7 +120,7 @@ const OnlineThing = ({ title, link } : { title : string, link : string }) => {
             </Tooltip>
             <IconButton 
                 title="Open Counter in new tab"
-                onClick={() => window.open(link, '_blank')}
+                onClick={() => window.open(GUI, '_blank')}
             >
                 <OpenInNewTwoTone />
             </IconButton>
@@ -133,7 +134,7 @@ export const Links = () => {
     return (
         <Stack direction='row' spacing={1} sx={{ paddingTop : 1}}>
             <IconButton 
-                onClick={() => window.open('https://github.com/VigneshVSV/thing-control-panel', '_blank')}
+                onClick={() => window.open('https://github.com/hololinked-dev/thing-control-panel', '_blank')}
                 title='View source code on GitHub'
             >
                 <GitHubIcon />
