@@ -9,7 +9,7 @@ import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, Butto
 // Custom component libraries 
 import { ActionInformation, Thing } from "./state";
 import { TabPanel } from "../reuse-components";
-import { PageContext, ThingManager, PageProps } from "./index";
+import { PageContext, ThingContext, PageProps } from "./index";
 import { InputChoice } from "./input-components";
 import { TDDocViewer } from "./doc-viewer";    
     
@@ -59,7 +59,6 @@ export const SelectedActionWindow = ({ action } : { action : ActionInformation }
 }
 
 
-
 const ActionTabComponents = ({tab, action} : {
     tab : string
     action : ActionInformation
@@ -76,9 +75,9 @@ const ActionInvokationClient = ({ action } :  {
     action : ActionInformation
 }) => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
-    
+
     const [clientChoice, _] = useState('node-wot')
     const [fetchExecutionLogs, setFetchExecutionLogs] = useState<boolean>(false)                                                                                               
     const [inputChoice, setInputChoice ] = useState('code-editor')
@@ -192,7 +191,6 @@ const ActionInvokationClient = ({ action } :  {
         setTimeoutValid(timeoutValid)
     }, [timeout, setTimeout])
 
-  
     return (
         <Stack id='action-execution-client-layout' sx={{ pt: 1, flexGrow: 1, display: 'flex' }}>
             <InputChoice 

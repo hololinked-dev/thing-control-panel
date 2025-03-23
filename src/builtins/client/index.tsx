@@ -30,7 +30,7 @@ import { Locator } from "./locator.js";
 export const ThingViewer = () => {
 
     return (
-        <Stack id="viewer-main-vertical-layout" sx={{ pl: 1, pr: 1 }}>  
+        <Stack id="thing-viewer-main-vertical-layout" sx={{ pl: 1, pr: 1 }}>  
             <FunctionalitiesView />
             <ErrorBoundary />
             <ResponseLogs />
@@ -44,7 +44,7 @@ const thingOptions = ['Properties', 'Actions', 'Events', 'Doc/Description']
 
 const FunctionalitiesView = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
     const [currentTab, setCurrentTab] = useState<number>(0)
     const [undock, setUndock] = useState<number>(-1)
@@ -186,7 +186,6 @@ const FunctionalitiesView = observer(() => {
 })
 
 
-
 const Functionalities = observer(({ type } : { type : string }) => {
 
     switch(type) {
@@ -203,10 +202,9 @@ const Functionalities = observer(({ type } : { type : string }) => {
 })
 
 
+const InteractionAffordancesView = observer(({ type } : { type : "Properties" | "Actions" | "Events" }) => {
 
-export const InteractionAffordancesView = observer(({ type } : { type : "Properties" | "Actions" | "Events" }) => {
-
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     // interaction affordance object selection number
     const objects = thing.getInteractionAffordances(type)
@@ -278,8 +276,14 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                     })}
                 </List>
             </Box>
-            <Divider orientation="vertical" sx={{ borderWidth : 2 }} />
-            <Box sx={{ width : "50%", pl : 1, pr : 2, overflowY : 'scroll', overflowX: 'auto', height : '100%' }}>
+            <Divider id="interaction-affordance-view-divider" orientation="vertical" sx={{ borderWidth : 2 }} />
+            <Box 
+                id="interaction-affordance-object-after-selected-execution-layout"
+                sx={{ 
+                    width : "50%", pl : 1, pr : 2, 
+                    overflowY : 'scroll', overflowX: 'auto', height : '100%' 
+                }}
+            >
                 {
                     objects[selectedIndex]?
                     <InteractionAffordanceSelect
@@ -293,8 +297,7 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
 })
 
 
-
-export const InteractionAffordanceSelect = ({ object, type } : {
+const InteractionAffordanceSelect = ({ object, type } : {
     object : ResourceInformation
     type : string
 }) => {
@@ -316,7 +319,7 @@ export type PageProps = {
     setShowSidebar : React.Dispatch<React.SetStateAction<boolean>> | Function
     updateLocalStorage : (value : any) => void
 }
-export const ThingManager = createContext<Thing | null>(null)
+
 export const PageContext = createContext<any>({
     settings : defaultClientSettings,
     updateSettings : () => {},
@@ -325,6 +328,8 @@ export const PageContext = createContext<any>({
     setShowSidebar : () => {},  
     updateLocalStorage : (_ : any) => {},
 })
+
+export const ThingContext = createContext<Thing | null>(null)
 
 export const ThingClient = () => {
 
@@ -392,7 +397,7 @@ export const ThingClient = () => {
     return (
         <Box id='client-layout-box' sx={{ pt: 0.5 }}>
             <PageContext.Provider value={pageState}>
-                <ThingManager.Provider value={thing.current}>
+                <ThingContext.Provider value={thing.current}>
                     <Stack id="thing-viewer-page-layout">
                         <Locator />
                         {showSettings?
@@ -401,7 +406,7 @@ export const ThingClient = () => {
                         }
                     </Stack>
                     <Sidebar open={showSidebar} setOpen={setShowSidebar} />
-                </ThingManager.Provider>
+                </ThingContext.Provider>
             </PageContext.Provider>
         </Box>
     )

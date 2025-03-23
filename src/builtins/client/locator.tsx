@@ -1,13 +1,13 @@
 // Internal & 3rd party functional libraries
-import {  useState, useRef, useCallback, useContext, useEffect } from "react";
+import {  useState, useCallback, useContext, useEffect } from "react";
 import * as React from "react";
 import { observer } from "mobx-react-lite";
 import '../../lib/wot-bundle.min.js';
 // Custom functional libraries
 import { Thing} from './state';
 // Internal & 3rd party component libraries
-import { Box, Button, Stack, Tab, Tabs, Typography, TextField, Divider,
-    IconButton, Autocomplete, List, ListItem, ListItemButton, ListItemText, CircularProgress } from "@mui/material";
+import { Box, Button, Stack, Typography, TextField, Divider,
+    IconButton, Autocomplete, CircularProgress } from "@mui/material";
 import SaveTwoToneIcon from '@mui/icons-material/SaveTwoTone';
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
@@ -16,7 +16,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import MenuIcon from '@mui/icons-material/Menu';
 // Custom component libraries
 import { useAutoCompleteOptionsFromLocalStorage } from "../hooks";
-import { PageContext, PageProps, ThingManager } from "./index";
+import { PageContext, PageProps, ThingContext } from "./index";
 
 
 
@@ -26,7 +26,7 @@ export const Locator = observer(() => {
     const [currentURL, setCurrentURL] = useState<string>(window.location ? window.location.hash ? window.location.hash.substring(1) : '' : '')
     const [loadingThing, setLoadingThing] = useState<boolean>(false)
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings, showSettings, setShowSettings, setShowSidebar } = useContext(PageContext) as PageProps
 
     const fetchThing = useCallback(async(currentURL : string) => {
@@ -139,7 +139,7 @@ const LocatorAutocomplete = ({
 
     // show delete button at given option
     const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     return (
         <Autocomplete

@@ -14,14 +14,14 @@ import { Stack, Typography,
 // Custom component libraries 
 // import { PropertyInformation } from './state';
 import { ResourceInformation, Thing } from './state';
-import { PageContext, PageProps, ThingManager } from './index';
+import { PageContext, PageProps, ThingContext } from './index';
 import { ObjectInspector } from 'react-inspector';
 
 
 
 export const ClassDocWindow = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
     const classDoc = thing.td.description
 
@@ -49,10 +49,10 @@ export const TDDocViewer = ({ resource, type } : {
     type: string
 }) => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     return (
-       <ObjectInspector expandLevel={3} data={thing.td[type === 'action'? 'actions' : 'properties'][resource.name]} /> 
+       <ObjectInspector expandLevel={3} data={thing.td[type === 'action'? 'actions' : type === 'event' ? 'events' : 'properties'][resource.name]} /> 
     )
 }
 

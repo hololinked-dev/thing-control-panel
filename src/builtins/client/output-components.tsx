@@ -16,7 +16,7 @@ import { downloadJSON, openJSONinNewTab, asyncRequest } from "../utils";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
 import { ErrorViewer } from "../reuse-components";
 import NewWindow from "react-new-window";
-import { PageContext, PageProps, ThingManager } from "./index";
+import { PageContext, PageProps, ThingContext } from "./index";
 import { Thing } from "./state";
 
 
@@ -27,7 +27,7 @@ export const allowedConsoleMaxEntries  = ["5", "10", "15", "20", "25", "50", "10
 
 export const UndockableConsole = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings, updateLocalStorage } = useContext(PageContext) as PageProps
 
     const [consoleOutputFontSize, setConsoleOutputFontSize] = useState<string>
@@ -309,7 +309,7 @@ export const allowedLogIntervals=['1', '2', '3', '5', '7', '10', '15', '20', '30
 
 export const LiveLogViewer = () => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     
     const { settings, updateLocalStorage } = useContext(PageContext) as PageProps
     const [eventSrc, setEventSrc] = useState<EventSource | null>(null)
@@ -574,7 +574,7 @@ export const LiveLogViewer = () => {
 
 export const ResponseLogs = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     const logs = thing.lastResponse? thing.lastResponse.data? 
                 thing.lastResponse.data.logs? thing.lastResponse.data.logs : null : null : null 
@@ -599,7 +599,7 @@ export const ResponseLogs = observer(() => {
 
 export const ErrorBoundary = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     return (
         <>

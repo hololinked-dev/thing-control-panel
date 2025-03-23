@@ -10,7 +10,7 @@ import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup,
 // Custom component libraries 
 import { TabPanel } from "../reuse-components";
 import { PropertyInformation, Thing } from "./state";
-import { PageContext, PageProps, ThingManager } from "./index";
+import { PageContext, PageProps, ThingContext } from "./index";
 import { InputChoice } from "./input-components";
 import { TDDocViewer } from "./doc-viewer";
 
@@ -21,7 +21,7 @@ const propertyOptions = ['Execute', 'Doc']
 export const SelectedPropertyWindow = ({ property } : { property : PropertyInformation}) => {
     // No need to use observer HOC as either property prop changes or child components of this component 
     // read and manipulate client state 
-    // const thing = useContext(ThingManager) as Thing
+    // const thing = useContext(ThingContext) as Thing
     
     // current tab of property options
     const [propertyOptionsTab, setPropertyOptionsTab] = useState(0);
@@ -68,7 +68,6 @@ export const SelectedPropertyWindow = ({ property } : { property : PropertyInfor
 }
 
 
-
 export const PropertyTabComponents = ({ tab, property } : { 
     tab : string
     property : PropertyInformation
@@ -81,10 +80,10 @@ export const PropertyTabComponents = ({ tab, property } : {
 }
 
 
-
+// RWO = read write observe
 export const RWO = ({ property } : { property: PropertyInformation }) => {
     // no need observer HOC as well
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
     // property input choice - raw value or JSON
     const [inputChoice, setInputChoice ] = useState(property.inputType) // JSON and RAW are allowed
@@ -203,9 +202,8 @@ export const RWO = ({ property } : { property: PropertyInformation }) => {
         setTimeoutValid(timeoutValid)
     }, [timeout, setTimeout])
 
-
     return (
-        <Stack id="property-rw-client" sx={{ pt: 1, flexGrow: 1, display: 'flex'  }}>
+        <Stack id="property-rw-client" sx={{ pt: 1, flexGrow: 1, display: 'flex' }}>
             {property.readOnly? null : 
                 <InputChoice 
                     jsonSchema={property} 
@@ -299,7 +297,7 @@ function stringify(val, depth, replacer, space) {
 
 const Observe = observer(({ property, skipDataSchemaValidation } : { property : PropertyInformation, skipDataSchemaValidation : boolean}) => {
     // This component will error if property is not observable
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
 
     const [eventURL, setEventURL] = useState<string>(property.forms.find(form => form.op === 'observeproperty').href)
@@ -363,28 +361,25 @@ const Observe = observer(({ property, skipDataSchemaValidation } : { property : 
         }
     }, [thing, eventURL, clientChoice, property])
 
-
     return (
-        <>
-            <ButtonGroup
-                id='observe-buttons'
-                variant="contained"
-                disableElevation
-                color="secondary"
+        <ButtonGroup
+            id='observe-buttons'
+            variant="contained"
+            disableElevation
+            color="secondary"
+        >
+            <Button 
+                disabled={thing.eventSources[property.name] !== undefined}
+                onClick={observeProp}
             >
-                <Button 
-                    disabled={thing.eventSources[property.name] !== undefined}
-                    onClick={observeProp}
-                >
-                    Observe
-                </Button>
-                <Button 
-                    disabled={!thing.eventSources[property.name]}
-                    onClick={unobserveProp}
-                >
-                    Stop
-                </Button>
-            </ButtonGroup>
-        </>
+                Observe
+            </Button>
+            <Button 
+                disabled={!thing.eventSources[property.name]}
+                onClick={unobserveProp}
+            >
+                Stop
+            </Button>
+        </ButtonGroup>
     )
 })

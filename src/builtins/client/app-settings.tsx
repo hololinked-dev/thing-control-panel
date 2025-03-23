@@ -9,7 +9,6 @@ import { Grid, Typography, FormControlLabel, Switch, Divider, Box,
     InputLabel, FormControl, SelectChangeEvent } from "@mui/material"
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
-
 import { stringToObject } from "../utils";
 import { toJS } from "mobx";
 import { allowedConsoleFontSizes, allowedConsoleMaxEntries, allowedConsoleWindowSizes, 
