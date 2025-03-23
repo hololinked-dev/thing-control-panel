@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import '../../lib/wot-bundle.min.js';
 // Custom functional libraries
 import { EventInformation, ActionInformation, PropertyInformation, ResourceInformation, Thing} from './state'
-import { AppSettings, ClientSettingsType, defaultClientSettings } from "./app-settings.js";
+import { AppSettings } from "../app-settings.js";
 // Internal & 3rd party component libraries
 import { Box, Stack, Tab, Tabs, Typography, Divider,
     IconButton, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
@@ -20,7 +20,7 @@ import { SelectedActionWindow } from "./action-client";
 import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
-import { useLocalStorage } from "../hooks";
+import { PageContext, PageProps } from "../../App";
 import { Sidebar } from "../sidebar.js";
 import { appConfig } from "../../../app.config.js";
 import { Locator } from "./locator.js";
@@ -50,7 +50,7 @@ const FunctionalitiesView = observer(() => {
     const [undock, setUndock] = useState<number>(-1)
     const [duplicates, setDuplicates] = useState<number[]>([])
     const undockedTab = useRef<number>(undock)
-    const [tabOrientation, _] = useState<"vertical" | "horizontal">(window.innerWidth < 600 ? "horizontal" : settings.tabOrientation)
+    const [tabOrientation, _] = useState<"vertical" | "horizontal">(settings.tabOrientation)
 
     const handleTabChange = useCallback(
         (_: React.SyntheticEvent, newValue: number) => {
@@ -311,38 +311,12 @@ const InteractionAffordanceSelect = ({ object, type } : {
 
 
 
-export type PageProps = {
-    settings : ClientSettingsType
-    updateSettings : React.Dispatch<React.SetStateAction<ClientSettingsType>>
-    showSettings : boolean
-    setShowSettings : React.Dispatch<React.SetStateAction<boolean>> | Function
-    showSidebar : boolean
-    setShowSidebar : React.Dispatch<React.SetStateAction<boolean>> | Function
-    updateLocalStorage : (value : any) => void
-}
-
-export const PageContext = createContext<any>({
-    settings : defaultClientSettings,
-    updateSettings : () => {},
-    showSettings : false,
-    setShowSettings : () => {},
-    setShowSidebar : () => {},  
-    updateLocalStorage : (_ : any) => {},
-})
-
 export const ThingContext = createContext<Thing | null>(null)
 
 export const ThingClient = () => {
 
-    const [showSettings, setShowSettings] = useState<boolean>(false)
-    const [showSidebar, setShowSidebar] = useState(false)
-
-    const [_existingSettings, updateLocalStorage] = useLocalStorage('thing-viewer-settings', defaultClientSettings)
-    const [settings, updateSettings] = useState<ClientSettingsType>(_existingSettings)
-    
-    const pageState = { settings, updateSettings, showSettings, setShowSettings, 
-                    showSidebar, setShowSidebar, updateLocalStorage }
     const thing = useRef<Thing>(new Thing())
+    const { showSettings, showSidebar, setShowSidebar } = useContext(PageContext) as PageProps
 
     /* 
     Thing Client composes Thing Viewer, Location and Settings components which controls the settings of the client
@@ -396,20 +370,18 @@ export const ThingClient = () => {
 
 
     return (
-        <Box id='client-layout-box' sx={{ pt: 0.5 }}>
-            <PageContext.Provider value={pageState}>
-                <ThingContext.Provider value={thing.current}>
-                    <Stack id="thing-viewer-page-layout">
-                        <Locator />
-                        {showSettings?
-                            <AppSettings globalState={null} /> : 
-                            <ThingViewer />
-                        }
-                    </Stack>
-                    <Sidebar open={showSidebar} setOpen={setShowSidebar} />
-                </ThingContext.Provider>
-            </PageContext.Provider>
-        </Box>
+        <ThingContext.Provider value={thing.current}>
+            <Box id='client-layout-box' sx={{ pt: 0.5 }}>
+                <Stack id="thing-viewer-page-layout">
+                    <Locator />
+                    {showSettings?
+                        <AppSettings globalState={null} /> : 
+                        <ThingViewer />
+                    }
+                </Stack>
+                <Sidebar open={showSidebar} setOpen={setShowSidebar} />    
+            </Box>
+        </ThingContext.Provider>
     )
 }
 

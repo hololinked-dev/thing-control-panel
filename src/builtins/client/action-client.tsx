@@ -9,7 +9,8 @@ import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, Butto
 // Custom component libraries 
 import { ActionInformation, Thing } from "./state";
 import { TabPanel } from "../reuse-components";
-import { PageContext, ThingContext, PageProps } from "./index";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { InputChoice } from "./input-components";
 import { TDDocViewer } from "./doc-viewer";    
     

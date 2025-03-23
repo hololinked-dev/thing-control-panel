@@ -16,8 +16,8 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import MenuIcon from '@mui/icons-material/Menu';
 // Custom component libraries
 import { useAutoCompleteOptionsFromLocalStorage } from "../hooks";
-import { PageContext, PageProps, ThingContext } from "./index";
-
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 
 
 export const Locator = observer(() => {

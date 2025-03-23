@@ -14,7 +14,8 @@ import { Box, Stack, Typography,
 // Custom component libraries 
 // import { PropertyInformation } from './state';
 import { ResourceInformation, Thing } from './state';
-import { PageContext, PageProps, ThingContext } from './index';
+import { ThingContext } from './index';
+import { PageContext, PageProps } from "../../App";
 import { chromeLight, ObjectInspector } from 'react-inspector';
 
 

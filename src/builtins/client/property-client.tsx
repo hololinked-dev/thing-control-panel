@@ -11,7 +11,8 @@ import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup,
 // Custom component libraries 
 import { TabPanel } from "../reuse-components";
 import { PropertyInformation, Thing } from "./state";
-import { PageContext, PageProps, ThingContext } from "./index";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { InputChoice } from "./input-components";
 import { TDDocViewer } from "./doc-viewer";
 

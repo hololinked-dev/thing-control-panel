@@ -7,7 +7,8 @@ import { Button, Stack, ButtonGroup, Link, Tabs, Tab, FormControlLabel, Checkbox
 // Custom component libraries 
 import { EventInformation } from './state'
 import { Thing } from "./state";
-import { PageContext, PageProps, ThingContext } from "./index";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { TabPanel } from "../reuse-components";
 import { TDDocViewer } from "./doc-viewer";
 

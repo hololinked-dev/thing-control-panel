@@ -16,7 +16,8 @@ import { downloadJSON, openJSONinNewTab, asyncRequest } from "../utils";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
 import { ErrorViewer } from "../reuse-components";
 import NewWindow from "react-new-window";
-import { PageContext, PageProps, ThingContext } from "./index";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { Thing } from "./state";
 
 
@@ -44,7 +45,7 @@ export const UndockableConsole = observer(() => {
    
     const handleFontSizeChange = useCallback((event: any) => {
         setConsoleOutputFontSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultFontSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -52,7 +53,7 @@ export const UndockableConsole = observer(() => {
 
     const handleWindowSizeChange = useCallback((event: any) => {
         setConsoleWindowSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultWindowSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -60,7 +61,7 @@ export const UndockableConsole = observer(() => {
     
     const handleMaxEntries = useCallback((event: any) => {
         setConsoleMaxEntries(event.target.value);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultMaxEntries = event.target.value
             updateLocalStorage(settings)
         }
@@ -68,7 +69,7 @@ export const UndockableConsole = observer(() => {
 
     const handleStringify = useCallback((event: any) => {
         setStringifyOutput(event.target.checked);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.stringifyOutput = event.target.checked
             updateLocalStorage(settings)
         }
@@ -335,7 +336,7 @@ export const LiveLogViewer = () => {
 
     const handleFontSizeChange = useCallback((event: any) => {
         setLogOutputFontSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultFontSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -343,7 +344,7 @@ export const LiveLogViewer = () => {
 
     const handleIntervalChange = useCallback((event: any) => {
         setLogInterval(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultInterval = event.target.value
             updateLocalStorage(settings)
         }
@@ -351,7 +352,7 @@ export const LiveLogViewer = () => {
 
     const handleWindowSizeChange = useCallback((event: any) => {
         setLogWindowSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultWindowSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -359,7 +360,7 @@ export const LiveLogViewer = () => {
 
     const handleMaxEntriesChange = useCallback((event: any) => {
         setLogMaxEntries(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultMaxEntries = event.target.value
             updateLocalStorage(settings)
         }
