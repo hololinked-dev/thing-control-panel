@@ -137,7 +137,7 @@ export const UndockableConsole = observer(() => {
                   }}
                 spacing={0.5}
             >
-                {undock? 
+                {settings.allowUndocking? undock? 
                     <IconButton size="medium" sx={{ borderRadius : 0 }} onClick={() => setUndock(false)}>
                         <CallReceivedTwoToneIcon fontSize="medium"/>
                     </IconButton>
@@ -145,6 +145,7 @@ export const UndockableConsole = observer(() => {
                     <IconButton size="medium" sx={{ borderRadius : 0 }} onClick={() => setUndock(true)}>
                         <OpenInBrowserTwoToneIcon fontSize="medium"/>
                     </IconButton>
+                    : null
                 }
                 <Button 
                     id='console-window-clear-button'

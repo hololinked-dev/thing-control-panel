@@ -296,6 +296,15 @@ const OtherSettings = () => {
                         />
                     </Box>
                 </Grid>
+                <Grid item>
+                    <BooleanSwitchSetting 
+                        settingName="allowUndocking"
+                        settingURL="/thing-viewer"
+                        label="allow undocking of components"
+                        initialValue={settings.allowUndocking}
+                        tooltip={`Shows an icon which can undock/redock certain parts of the UI`}
+                    />
+                </Grid>
                 {/* <Grid item> uncomment later, must work
                     <BooleanSwitchSetting 
                         settingName="autoSaveChanges"
@@ -305,6 +314,7 @@ const OtherSettings = () => {
                         tooltip="auto save changes made to the same settings from else where in the app"
                     />
                 </Grid> */}
+                
                 <Grid item>
                     <BooleanSwitchSetting 
                         settingName="useLocalStorage"
@@ -318,6 +328,7 @@ const OtherSettings = () => {
                         }
                     />
                 </Grid>
+
             </Grid>
         </Box>
     )
@@ -335,6 +346,24 @@ const updateNestedSetting = (obj: any, keys: string[], value: any) => {
         obj[key] = value;
     }
 };
+
+
+const ClearLocalStorageButton = () => {
+
+    return (
+        <Button 
+            sx={{ alignSelf: 'flex-start' }}
+            onClick={() => {
+                if (window.confirm("Are you sure you want to clear local storage?")) 
+                    clearLocalStorage()
+            }}
+            variant='contained'    
+            color='warning'
+        >
+            Clear Local Storage
+        </Button>
+    )
+}
 
 
 export const AppSettings = ( { globalState } : { globalState : any }) => {
@@ -377,17 +406,7 @@ export const AppSettings = ( { globalState } : { globalState : any }) => {
                     <ThingViewerSettings />
                     <OtherSettings />
                     {/* <LoginPageSettings />  */}
-                    <Button 
-                        sx={{ alignSelf: 'flex-start' }}
-                        onClick={() => {
-                            if (window.confirm("Are you sure you want to clear local storage?")) 
-                                clearLocalStorage()
-                        }}
-                        variant='contained'    
-                        color='warning'
-                    >
-                        Clear Local Storage
-                    </Button>
+                    <ClearLocalStorageButton />
                 </Stack>
             </SettingsUpdateContext.Provider>
         </Grid>
@@ -399,9 +418,10 @@ export type AppSettingsType = {
     tabOrientation : "horizontal" | "vertical",
     autoSaveChanges : boolean,
     useLocalStorage : boolean,
-    windowZoom : number,
     showWebsiteWarningAgain : boolean,
     defaultEndpoint : string,
+    allowUndocking : boolean,
+    windowZoom : number,
     login : {
         displayFooter : boolean
         footer : string
@@ -428,6 +448,7 @@ export const defaultAppSettings : AppSettingsType = {
     windowZoom : 100,
     showWebsiteWarningAgain : true,
     defaultEndpoint : "",
+    allowUndocking : false,
     login : {
         displayFooter : true,
         footer : "",

@@ -80,20 +80,24 @@ const FunctionalitiesView = observer(() => {
 
     return(
         <Stack direction='row'>
-            <Stack>
-                {undock >= 0?
-                    <IconButton id='undock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={dockWindow}>
-                        <CallReceivedTwoToneIcon fontSize="small"/>
+            {settings.allowUndocking?
+                <Stack>
+                    {undock >= 0?
+                        <IconButton id='undock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={dockWindow}>
+                            <CallReceivedTwoToneIcon fontSize="small"/>
+                        </IconButton>
+                        :
+                        <IconButton id='dock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={undockWindow}>
+                            <OpenInBrowserTwoToneIcon fontSize="small"/>
+                        </IconButton>
+                    }
+                    
+                    <IconButton id='copy-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={addDuplicateWindow}>
+                        <CopyAllTwoToneIcon fontSize="small"/>
                     </IconButton>
-                    :
-                    <IconButton id='dock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={undockWindow}>
-                        <OpenInBrowserTwoToneIcon fontSize="small"/>
-                    </IconButton>
-                }
-                <IconButton id='copy-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={addDuplicateWindow}>
-                    <CopyAllTwoToneIcon fontSize="small"/>
-                </IconButton>
-            </Stack>
+                </Stack>
+                : null
+            }
             <Stack 
                 sx={{ flexGrow : 1, display : 'flex', overflowX: 'auto' }} 
                 direction={tabOrientation === 'vertical'? 'row' : 'column'}

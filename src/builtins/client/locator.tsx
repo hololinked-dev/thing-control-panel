@@ -89,13 +89,16 @@ export const Locator = observer(() => {
                     {loadingThing? <Box sx={{ pl : 1, pt : 0.5 }}><CircularProgress size={20} /></Box>: null }
                 </Button>
                 <Divider orientation="vertical" />
-                <IconButton
-                    id='save-thing-url'
-                    sx={{ borderRadius : 0 }}
-                    onClick={() => modifyOptions(currentURL, 'ADD')}
-                >
-                    <SaveTwoToneIcon />
-                </IconButton>
+                {settings.useLocalStorage?
+                    <IconButton
+                        id='save-thing-url'
+                        sx={{ borderRadius : 0 }}
+                        onClick={() => modifyOptions(currentURL, 'ADD')}
+                    >
+                        <SaveTwoToneIcon />
+                    </IconButton> :
+                    null
+                }
                 <IconButton
                     id="open-resource-json-in-new-tab"
                     onClick={() => window.open(
