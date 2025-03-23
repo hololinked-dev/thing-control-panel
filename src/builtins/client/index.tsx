@@ -223,11 +223,11 @@ const InteractionAffordancesView = observer(({ type } : { type : "Properties" | 
     }, [setSelectedIndex])
 
     return (
-        <Stack direction='row' sx={{ flexGrow: 1 }} >
+        <Stack direction='row' sx={{ flexGrow: 1, overflowX: { xs: 'scroll', sm: 'auto' }}} >
             <Box
                 id="interaction-affordance-object-selection-list-layout" 
                 sx={{ 
-                    width : "50%", resize : 'horizontal',
+                    width : "50%", resize : 'horizontal', minWidth: 300,
                     overflow : 'auto', height : "100%"
                 }}
             >
@@ -285,7 +285,7 @@ const InteractionAffordancesView = observer(({ type } : { type : "Properties" | 
             <Box 
                 id="interaction-affordance-object-after-selected-execution-layout"
                 sx={{ 
-                    width: '50%', pl : 1, pr : 2, 
+                    width: '50%', pl : 1, pr : 2, minWidth: 300,
                     overflowY : 'scroll', overflowX: 'auto', height : '100%' 
                 }}
             >
