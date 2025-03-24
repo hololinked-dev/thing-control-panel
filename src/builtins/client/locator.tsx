@@ -179,25 +179,32 @@ const LocatorAutocomplete = ({
                     }}
                     {...params}
                 />}
-            renderOption={(props, option : any, {}) => (
-                <li
-                    {...props}
-                    onMouseOver={() => setAutocompleteShowDeleteIcon(option)}
-                    onMouseLeave={() => setAutocompleteShowDeleteIcon('')}
-                >
-                    <Typography
-                        sx={{
-                            display : 'flex', flexGrow : 1,
-                            fontWeight : option === autocompleteShowDeleteIcon? 'bold' : null
-                        }}
+            renderOption={(props, option : any, {}) => {
+                const key = props.key 
+                delete props.key
+                return (
+                    <li
+                        key={key}
+                        {...props} // key no longer supports spread operator
+                        onMouseOver={() => setAutocompleteShowDeleteIcon(option)}
+                        onMouseLeave={() => setAutocompleteShowDeleteIcon('')}
                     >
-                        {option}
-                    </Typography>
-                    {option === autocompleteShowDeleteIcon?
-                    <IconButton size="small" onClick={() => editURLsList(option, 'REMOVE')}>
-                        <DeleteForeverIcon fontSize="small" />
-                    </IconButton> : null }
-                </li>)}
+                        <Typography
+                            sx={{
+                                display : 'flex', flexGrow : 1,
+                                fontWeight : option === autocompleteShowDeleteIcon? 'bold' : null
+                            }}
+                        >
+                            {option}
+                        </Typography>
+                        {option === autocompleteShowDeleteIcon?
+                            <IconButton size="small" onClick={() => editURLsList(option, 'REMOVE')}>
+                                <DeleteForeverIcon fontSize="small" />
+                            </IconButton> 
+                            : null 
+                        }
+                    </li>
+                )}}
             />
     )
 }
