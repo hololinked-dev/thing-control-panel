@@ -5,27 +5,19 @@ import { AxiosResponse } from "axios";
 import { getFormattedTimestamp, asyncRequest, parseActionPayloadWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-    RadioGroup, Box, Radio, useTheme, TextField, Checkbox, 
-    Typography} from "@mui/material";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-crimson_editor"
-import "ace-builds/src-noconflict/ext-language_tools";
+    RadioGroup, Box, Radio, Checkbox, Typography} from "@mui/material";
 // Custom component libraries 
 import { ActionInformation, Thing } from "./state";
 import { TabPanel } from "../reuse-components";
-import { PageContext, ThingManager, PageProps } from "./view";
-import { ObjectInspector } from "react-inspector";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
+import { InputChoice } from "./input-components";
+import { TDDocViewer } from "./doc-viewer";    
     
-    
-
-type SelectedActionWindowProps = {
-    action : ActionInformation
-}
 
 const actionFields = ['Execute', 'Doc']
 
-export const SelectedActionWindow = (props : SelectedActionWindowProps) => {
+export const SelectedActionWindow = ({ action } : { action : ActionInformation }) => {
 
     const [actionFieldsTab, setActionFieldsTab] = useState(0);
     const handleTabChange = useCallback((_ : React.SyntheticEvent, newValue: number) => {
@@ -33,7 +25,7 @@ export const SelectedActionWindow = (props : SelectedActionWindowProps) => {
     }, [])
     
     return (
-        <Stack id="selected-action-view-layout" sx={{ flexGrow: 1, display : 'flex' }} >
+        <Stack id="selected-action-view-layout" sx={{ flexGrow: 1, display: 'flex' }}>
             <Tabs
                 id="selected-action-fields-tab"
                 variant="scrollable"
@@ -59,7 +51,7 @@ export const SelectedActionWindow = (props : SelectedActionWindowProps) => {
                 >
                     <ActionTabComponents 
                         tab={name} 
-                        action={props.action}
+                        action={action}
                     />
                 </TabPanel>
             )} 
@@ -68,38 +60,28 @@ export const SelectedActionWindow = (props : SelectedActionWindowProps) => {
 }
 
 
-
-type ActionTabComponentsProps = {
+const ActionTabComponents = ({tab, action} : {
     tab : string
     action : ActionInformation
-}
+}) => {
 
-export const ActionTabComponents = ( {tab, action} : ActionTabComponentsProps) => {
-
-    
     switch(tab) {
-        case "Doc" : {
-            const thing = useContext(ThingManager) as Thing
-            return <ObjectInspector expandLevel={3} data={thing.td["actions"][action.name]} /> 
-        }
-        default : return <ActionInvokationClient action={action} ></ActionInvokationClient>
+        case "Doc" : return <TDDocViewer resource={action} type='action' />
+        default : return <ActionInvokationClient action={action} />
     }
 }
 
 
-
-type ActionInvokationProps = {
+const ActionInvokationClient = ({ action } :  {
     action : ActionInformation
-}
+}) => {
 
-export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
-
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
-    
+
     const [clientChoice, _] = useState('node-wot')
     const [fetchExecutionLogs, setFetchExecutionLogs] = useState<boolean>(false)                                                                                               
-    const [inputChoice, setInputChoice ] = useState('code editor')
+    const [inputChoice, setInputChoice ] = useState('code-editor')
     const [timeout, setTimeout] = useState<number>(-1)
     const [timeoutValid, setTimeoutValid] = useState<boolean>(true)
     const [skipResponseValidation, setSkipResponseValidation] = useState(false)
@@ -115,7 +97,7 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
     
     const invokeAction = useCallback(async () => {
         try {
-            let data, _fullpath 
+            let data: any, _fullpath: string 
             let fullpath = action.forms[0]["href"]
             let http_method = action.forms[0]["htv:methodName"]
             if(http_method.toLowerCase() === 'get') {
@@ -125,11 +107,11 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                     _fullpath += `&fetch_execution_logs=${fetchExecutionLogs}`
             }
             else {
-                data = { 
-                    fetch_execution_logs : fetchExecutionLogs,
-                    timeout : timeout,
-                    ...JSON.parse(kwargsValue)
-                }
+                let parsedPayload = JSON.parse(kwargsValue)
+                if(parsedPayload) 
+                    data = parsedPayload
+                else 
+                    data = null 
                 _fullpath = fullpath  
             }
             /* 
@@ -151,7 +133,7 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                 2. update console output
                 3. reset error
             */
-            let consoleOutput
+            let consoleOutput: any
             const requestTime = getFormattedTimestamp()
             const requestTime_ = Date.now()
             if(clientChoice !== 'node-wot') {
@@ -177,14 +159,13 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                 
             }
             else {
-                console.log("payload", data)
+                console.log("payload for action:", data)
                 let lastResponse = await thing.client.invokeAction(action.name, data)
                 thing.setLastResponse(lastResponse)
-                if(skipResponseValidation)
-                    lastResponse.ignoreValidation = true
+                lastResponse.ignoreValidation = skipResponseValidation
                 consoleOutput = await lastResponse.value()
-                if(!consoleOutput)
-                    consoleOutput = 'no return value'
+                if(consoleOutput === undefined || consoleOutput === null)
+                    consoleOutput = 'operation performed, no or null return value'
             }       
             if(settings.console.stringifyOutput) 
                 console.log(JSON.stringify(consoleOutput, null, 2))
@@ -210,22 +191,23 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
         setTimeoutValid(timeoutValid)
     }, [timeout, setTimeout])
 
-  
     return (
-        <Stack id='action-execution-client-layout' sx={{ flexGrow: 1, display : 'flex', pt: 2 }}>
-            <ActionInputChoice 
+        <Stack id='action-execution-client-layout' sx={{ pt: 1, flexGrow: 1, display: 'flex', pb: 1 }}>
+            <InputChoice 
                 choice={inputChoice} 
-                inputSchema={action.input} 
+                jsonSchema={action.input} 
                 setValue={setKwargsValue} 
                 value={kwargsValue}    
             />
-            {inputChoice === 'code editor' && <Typography variant="caption" sx={{pl : 2, pt : 1}}>Use double quotes only</Typography>}
+            {inputChoice === 'code-editor' && <Typography variant="caption">Use double quotes only</Typography>}
             <Stack 
                 id='action-execution-client-options-layout' 
                 direction="row" 
-                sx={{ flexGrow: 1, display : 'flex'}}
+                spacing={1}
+                useFlexGap
+                sx={{ flexWrap: 'wrap', pt: 1 }}
             >
-                <FormControl sx={{pl : 2, pt : 2}}> 
+                <FormControl> 
                     <RadioGroup
                         id="actions-execution-client-input-choice-group"
                         row
@@ -233,7 +215,7 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                         onChange={handleInputSelection}
                     >
                         <FormControlLabel value="raw" control={<Radio size="small" />} label="raw" />
-                        <FormControlLabel value="code editor" control={<Radio size="small" />} label="code editor" />
+                        <FormControlLabel value="code-editor" control={<Radio size="small" />} label="code editor" />
                     </RadioGroup>
                 </FormControl>
                 {/* <Box sx={{ pl : 2, pt: 2, pr: 2, maxWidth : 100 }} > */}
@@ -246,37 +228,36 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
                         onChange={handleTimeoutChange}
                     />
                 </Box> */}
-                <Box sx={{pt: 2, flexGrow: 0.01, display : 'flex' }} >
-                    {/* <ButtonGroup> */}
-                        <Button 
-                            variant="contained"
-                            disableElevation
-                            color="secondary"
-                            onClick={invokeAction}
-                          
-                        >
-                            Execute
-                        </Button>    
-                        {/* <Divider orientation="vertical" sx={{ backgroundColor : "black" }}></Divider> */}
-                        {/* <Button 
-                            variant="contained"
-                            disableElevation
-                            color="secondary"
-                            
-                            // onClick={cancelAction}
-                        >
-                            Cancel
-                        </Button>     */}
-                    {/* </ButtonGroup> */}
-                </Box>                
+                {/* <ButtonGroup> */}
+                    <Button 
+                        variant="contained"
+                        disableElevation
+                        color="secondary"
+                        onClick={invokeAction}
+                        
+                    >
+                        Execute
+                    </Button>    
+                    {/* <Divider orientation="vertical" sx={{ backgroundColor : "black" }}></Divider> */}
+                    {/* <Button 
+                        variant="contained"
+                        disableElevation
+                        color="secondary"
+                        
+                        // onClick={cancelAction}
+                    >
+                        Cancel
+                    </Button>     */}
+                {/* </ButtonGroup> */}
                 <FormControlLabel
                     label="skip response validation"
-                    control={<Checkbox
-                                size="small"
-                                checked={skipResponseValidation}
-                                onChange={(event) => setSkipResponseValidation(event.target.checked)}
-                            />}
-                    sx={{ p : 1, pt:2 }}
+                    control={
+                        <Checkbox
+                            size="small"
+                            checked={skipResponseValidation}
+                            onChange={(event) => setSkipResponseValidation(event.target.checked)}
+                        />
+                    }
                 />
                 {/* <FormControlLabel
                     label="fetch execution logs"
@@ -290,77 +271,4 @@ export const ActionInvokationClient = ( { action } : ActionInvokationProps) => {
             </Stack>
         </Stack>
     )
-}
-
-
-
-type ActionInputChoiceProps = { 
-    choice : string
-    inputSchema : object
-    setValue : any
-    value : any 
-}
-
-export const ActionInputChoice = (props : ActionInputChoiceProps) => {
-    const theme = useTheme()
-
-    switch(props.choice) {
-        case 'code editor' : return <Box id="ace-editor-box" sx={{display : 'flex', flexGrow : 1}}>
-                                <AceEditor
-                                    name="actions-client-json-input"
-                                    placeholder="payload for executing action"
-                                    mode="json"
-                                    theme="crimson_editor"
-                                    value={
-                                        props.value? props.value : 
-                                            props.inputSchema? 
-                                                // @ts-expect-error
-                                                props.inputSchema.type === 'object'? 
-                                                    // @ts-expect-error
-                                                    props.inputSchema.properties ? 
-                                                        // @ts-expect-error
-                                                        `{${Object.keys(props.inputSchema.properties).map(key => 
-                                                            // @ts-expect-error
-                                                            `\n\t"${key}": ${props.inputSchema.properties[key].default ? JSON.stringify(props.inputSchema.properties[key].default) : ''}`
-                                                        ).join(',').slice(0, -1)}\n}` : 
-                                                        ''
-                                                : ''
-                                            : ''
-                                    }
-                                    onChange={(newValue) => props.setValue(newValue)}
-                                    fontSize={18}
-                                    showPrintMargin={true}
-                                    showGutter={true}
-                                    highlightActiveLine={true}
-                                    wrapEnabled={true}
-                                    style={{
-                                        backgroundColor : theme.palette.grey[100],
-                                        maxHeight : 150,
-                                        overflow : 'scroll',
-                                        scrollBehavior : 'smooth',
-                                        width : "100%"
-                                    }}
-                                    setOptions={{
-                                        enableBasicAutocompletion: false,
-                                        enableLiveAutocompletion: false,
-                                        enableSnippets: false,
-                                        showLineNumbers: true,
-                                        tabSize: 4,
-                                    }}
-                                />
-                            </Box>
-        default : return <TextField
-                            variant="outlined"
-                            multiline
-                            size="small"
-                            maxRows={100}
-                            label="arguments"
-                            helperText="press enter to expand"
-                            sx={{ flexGrow: 1, display : 'flex' }}
-                            onChange={(event) => 
-                                props.setValue(JSON.stringify(parseActionPayloadWithInterpretation(
-                                    event.target.value, props.inputSchema)))
-                            }
-                        />
-    }
 }

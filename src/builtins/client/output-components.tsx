@@ -16,7 +16,8 @@ import { downloadJSON, openJSONinNewTab, asyncRequest } from "../utils";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
 import { ErrorViewer } from "../reuse-components";
 import NewWindow from "react-new-window";
-import { PageContext, PageProps, ThingManager } from "./view";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { Thing } from "./state";
 
 
@@ -27,7 +28,7 @@ export const allowedConsoleMaxEntries  = ["5", "10", "15", "20", "25", "50", "10
 
 export const UndockableConsole = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings, updateLocalStorage } = useContext(PageContext) as PageProps
 
     const [consoleOutputFontSize, setConsoleOutputFontSize] = useState<string>
@@ -44,7 +45,7 @@ export const UndockableConsole = observer(() => {
    
     const handleFontSizeChange = useCallback((event: any) => {
         setConsoleOutputFontSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultFontSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -52,7 +53,7 @@ export const UndockableConsole = observer(() => {
 
     const handleWindowSizeChange = useCallback((event: any) => {
         setConsoleWindowSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultWindowSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -60,7 +61,7 @@ export const UndockableConsole = observer(() => {
     
     const handleMaxEntries = useCallback((event: any) => {
         setConsoleMaxEntries(event.target.value);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.defaultMaxEntries = event.target.value
             updateLocalStorage(settings)
         }
@@ -68,7 +69,7 @@ export const UndockableConsole = observer(() => {
 
     const handleStringify = useCallback((event: any) => {
         setStringifyOutput(event.target.checked);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.console.stringifyOutput = event.target.checked
             updateLocalStorage(settings)
         }
@@ -120,12 +121,23 @@ export const UndockableConsole = observer(() => {
 
     
     return(
-        <Stack id="client-output-console-box" sx={{ pt : 1, flexGrow : 1, display : 'flex' }}>
-            <Divider sx ={{ pb : 2, flexGrow : 1, display : 'flex' }} id="client-output-console-title">
+        <Stack id="client-output-console-box" sx={{ pt : 1 }}>
+            <Divider id="client-output-console-title">
                 <Typography variant="button" color="GrayText">OUTPUT</Typography>
             </Divider>
-            <Stack id="console-window-options-layout" direction="row" sx ={{ pb : 2, flexGrow : 1, display : 'flex' }}>
-                {undock? 
+            <Stack 
+                id="console-window-options-layout" 
+                direction="row" 
+                sx={{ 
+                    pb: 1, flexGrow: 1, display: 'flex', overflowX: 'scroll',
+                    scrollbarWidth: "none", // Firefox
+                    "&::-webkit-scrollbar": {
+                      display: "none", // Chrome, Safari
+                    },
+                  }}
+                spacing={0.5}
+            >
+                {settings.allowUndocking? undock? 
                     <IconButton size="medium" sx={{ borderRadius : 0 }} onClick={() => setUndock(false)}>
                         <CallReceivedTwoToneIcon fontSize="medium"/>
                     </IconButton>
@@ -133,113 +145,104 @@ export const UndockableConsole = observer(() => {
                     <IconButton size="medium" sx={{ borderRadius : 0 }} onClick={() => setUndock(true)}>
                         <OpenInBrowserTwoToneIcon fontSize="medium"/>
                     </IconButton>
+                    : null
                 }
-                <Box key='console-window-clear-button-box' sx={{ pl : 3 }}>
-                    <Button 
-                        id='console-window-clear-button'
-                        variant='outlined' 
-                        size='large' 
-                        onClick={clearOutput}
-                        sx={{ borderColor : 'GrayText' }}
-                    >
-                        Clear Output
-                    </Button>
-                </Box>
-                <Box key='console-window-json-download-box' sx = {{ pl : 2 }}>
-                    <Stack direction="row">
-                        <Box sx ={{ pr : 2 }}>
-                            <Stack direction="row">
-                                <ButtonGroup> 
-                                    <Button size="large" variant="text" disabled>
-                                        Last Response
-                                    </Button>                
-                                    <IconButton 
-                                        onClick={openLastResponseInNewTab} 
-                                        size="medium" 
-                                        sx={{ borderRadius : 0 }}
-                                    >
-                                        <OpenInNewTwoToneIcon fontSize="medium"/> 
-                                    </IconButton>
-                                    <IconButton 
-                                        onClick={downloadLastResponse} 
-                                        size="medium" 
-                                        sx={{ borderRadius : 0 }}
-                                    >
-                                        <DownloadIcon fontSize="medium"/> 
-                                    </IconButton>
-                                </ButtonGroup>
-                            </Stack>
-                        </Box>
-                        <Stack direction="row">
-                            <Button size="large" variant="text" disabled>
-                                CONSOLE ENTRIES
-                            </Button>    
-                            <IconButton onClick={openResponseInNewTab} size="medium" sx={{ borderRadius : 0 }}>
-                                <OpenInNewTwoToneIcon fontSize="medium"/> 
-                            </IconButton>
-                            <IconButton onClick={downloadResponse} size="medium" sx={{ borderRadius : 0 }}>
-                                <DownloadIcon fontSize="medium"/> 
-                            </IconButton>
-                        </Stack>
-                    </Stack>
-                </Box>
+                <Button 
+                    id='console-window-clear-button'
+                    variant='outlined' 
+                    onClick={clearOutput}
+                    sx={{ borderColor : 'GrayText' }}
+                >
+                    Clear Output
+                </Button>
                 <Stack direction="row">
-                    <Button size="large" variant="text" disabled>
+                    <ButtonGroup> 
+                        <Button variant="text" disabled>
+                            Last Response
+                        </Button>                
+                        <IconButton 
+                            onClick={openLastResponseInNewTab} 
+                            size="medium" 
+                            sx={{ borderRadius : 0 }}
+                        >
+                            <OpenInNewTwoToneIcon fontSize="medium"/> 
+                        </IconButton>
+                        <IconButton 
+                            onClick={downloadLastResponse} 
+                            size="medium" 
+                            sx={{ borderRadius : 0 }}
+                        >
+                            <DownloadIcon fontSize="medium"/> 
+                        </IconButton>
+                    </ButtonGroup>
+                </Stack>
+                <Stack direction="row">
+                    <Button variant="text" disabled>
+                        CONSOLE ENTRIES
+                    </Button>    
+                    <IconButton onClick={openResponseInNewTab} size="medium" sx={{ borderRadius : 0 }}>
+                        <OpenInNewTwoToneIcon fontSize="medium"/> 
+                    </IconButton>
+                    <IconButton onClick={downloadResponse} size="medium" sx={{ borderRadius : 0 }}>
+                        <DownloadIcon fontSize="medium"/> 
+                    </IconButton>
+                </Stack>
+                <Stack direction="row">
+                    <Button variant="text" disabled>
                         Stringify Output
                     </Button>   
                     <Checkbox
                         id='console-window-stringify-output-checkbox'
-                        size="medium"
+                        size="small"
                         checked={stringifyOutput}
                         onChange={handleStringify}
                         sx={{ borderRadius : 0 }}
                     />
                 </Stack>
-                <FormControl id='console-window-font-size-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-font-size-selector-label">Font Size</InputLabel>
-                    <Select
-                        id="console-window-font-size-selector"
-                        label="Font Size"
-                        value={consoleOutputFontSize}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleFontSizeChange}
-                    >
-                        {allowedConsoleFontSizes.map((value : string) => 
-                            <MenuItem key={"console-window-font-size-selector-"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl id='console-window-size-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-size-selector-label">Window Size</InputLabel>
-                    <Select
-                        id="console-window-size-selector"
-                        label="Window Size"
-                        value={consoleWindowSize}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleWindowSizeChange}
-                    >
-                        {allowedConsoleWindowSizes.map((value : string) => 
-                            <MenuItem key={"console-window-size-selector-"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl id='console-window-max-entries-form' sx={{ pl : 2 }}>
-                    <InputLabel id="console-window-max-entries-selector-label">Max Entries</InputLabel>
-                    <Select
-                        id="console-window-max-entries-selector"
-                        label="Max Entries"
-                        value={consoleMaxEntries}
-                        size="small"
-                        variant="standard"
-                        sx={{ width : 80 }}
-                        onChange={handleMaxEntries}
-                    >
-                        {allowedConsoleMaxEntries.map((value : string) => 
-                            <MenuItem key={"console-window-max-entries-selector"+value} value={value}>{value}</MenuItem>)}
-                    </Select>
-                </FormControl>
+                <Stack direction="row" spacing={2} sx={{ pt: { xs: 1.25, md: 0.75 } }} >
+                    <FormControl id='console-window-font-size-form'>
+                        <InputLabel id="console-window-font-size-selector-label">Font Size</InputLabel>
+                        <Select
+                            id="console-window-font-size-selector"
+                            label="Font Size"
+                            size="small"
+                            value={consoleOutputFontSize}      
+                            sx={{ width : 80 }}
+                            onChange={handleFontSizeChange}
+                        >
+                            {allowedConsoleFontSizes.map((value : string) => 
+                                <MenuItem key={"console-window-font-size-selector-"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl id='console-window-size-form'>
+                        <InputLabel id="console-window-size-selector-label">Window Size</InputLabel>
+                        <Select
+                            id="console-window-size-selector"
+                            label="Window Size"
+                            size="small"
+                            value={consoleWindowSize}
+                            sx={{ width : 100 }}
+                            onChange={handleWindowSizeChange}
+                        >
+                            {allowedConsoleWindowSizes.map((value : string) => 
+                                <MenuItem key={"console-window-size-selector-"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl id='console-window-max-entries-form'>
+                        <InputLabel id="console-window-max-entries-selector-label">Max Entries</InputLabel>
+                        <Select
+                            id="console-window-max-entries-selector"
+                            label="Max Entries"
+                            size="small"
+                            value={consoleMaxEntries}
+                            sx={{ width : 100 }}
+                            onChange={handleMaxEntries}
+                        >
+                            {allowedConsoleMaxEntries.map((value : string) => 
+                                <MenuItem key={"console-window-max-entries-selector"+value} value={value}>{value}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                </Stack>
             </Stack>
             {undock?
                 <NewWindow
@@ -284,7 +287,6 @@ export const ConsoleOutput = ( { consoleWindowSize, consoleEntries, consoleOutpu
                 height : consoleWindowSize === "expand always" ? undefined : Number(consoleWindowSize),
                 overflow  : 'scroll',
                 border : '1px solid grey',
-                flexGrow : 1, display : 'flex'
             }}
         >
             <Console 
@@ -309,7 +311,7 @@ export const allowedLogIntervals=['1', '2', '3', '5', '7', '10', '15', '20', '30
 
 export const LiveLogViewer = () => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     
     const { settings, updateLocalStorage } = useContext(PageContext) as PageProps
     const [eventSrc, setEventSrc] = useState<EventSource | null>(null)
@@ -335,7 +337,7 @@ export const LiveLogViewer = () => {
 
     const handleFontSizeChange = useCallback((event: any) => {
         setLogOutputFontSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultFontSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -343,7 +345,7 @@ export const LiveLogViewer = () => {
 
     const handleIntervalChange = useCallback((event: any) => {
         setLogInterval(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultInterval = event.target.value
             updateLocalStorage(settings)
         }
@@ -351,7 +353,7 @@ export const LiveLogViewer = () => {
 
     const handleWindowSizeChange = useCallback((event: any) => {
         setLogWindowSize(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultWindowSize = event.target.value
             updateLocalStorage(settings)
         }
@@ -359,7 +361,7 @@ export const LiveLogViewer = () => {
 
     const handleMaxEntriesChange = useCallback((event: any) => {
         setLogMaxEntries(event.target.value as string);
-        if(settings.updateLocalStorage) {
+        if(settings.autoSaveChanges) {
             settings.logViewer.defaultMaxEntries = event.target.value
             updateLocalStorage(settings)
         }
@@ -574,7 +576,7 @@ export const LiveLogViewer = () => {
 
 export const ResponseLogs = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     const logs = thing.lastResponse? thing.lastResponse.data? 
                 thing.lastResponse.data.logs? thing.lastResponse.data.logs : null : null : null 
@@ -599,23 +601,33 @@ export const ResponseLogs = observer(() => {
 
 export const ErrorBoundary = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     return (
-        <Stack id='error-viewer-box-for-padding' sx={{ pt : 1 }}>
-            {thing.errorMessage? 
+        <>
+        {thing.errorMessage? 
+            <Stack id='error-viewer-box-for-padding' sx={{ pt : 1 }}>
                 <Divider id="client-output-console-title">
                     <Typography variant="button" color="GrayText">DETAILED ERRORS</Typography>
-                </Divider> : null
-            }
-            <ErrorViewer 
-                errorMessage={thing.errorMessage} 
-                errorTraceback={thing.errorTraceback}
-            />
-        </Stack>     
+                </Divider> 
+                <ErrorViewer 
+                    errorMessage={thing.errorMessage} 
+                    errorTraceback={thing.errorTraceback}
+                />
+                <Box sx={{ pb : 1 }} />
+                <Button
+                    id='error-viewer-clear-button'
+                    variant='outlined'
+                    onClick={() => thing.resetError()}
+                    sx={{ alignSelf: 'flex-start' }}
+                >
+                    Clear Errors
+                </Button>
+            </Stack> : null     
+        }
+        </>
     )
 })
-
 
 
 // export const StatusBar = observer(( { thing } : { thing : Thing }) => {

@@ -3,23 +3,15 @@ import {  useState, useRef, useCallback, useContext, createContext, useEffect } 
 import * as React from "react";
 import { observer } from "mobx-react-lite";
 import '../../lib/wot-bundle.min.js';
-// import '../../lib/types/index.d.ts';
-// import Wot from '../../lib/dist/wot-bundle.min.js';
 // Custom functional libraries
 import { EventInformation, ActionInformation, PropertyInformation, ResourceInformation, Thing} from './state'
-import { AppSettings, ClientSettingsType, defaultClientSettings } from "./app-settings.js";
+import { AppSettings } from "../app-settings.js";
 // Internal & 3rd party component libraries
-import { Box, Button, Stack, Tab, Tabs, Typography, TextField, Divider,
-    IconButton, Autocomplete, List, ListItem, ListItemButton, ListItemText, CircularProgress } from "@mui/material";
-import SaveTwoToneIcon from '@mui/icons-material/SaveTwoTone';
-import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
-import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
-import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { Box, Stack, Tab, Tabs, Typography, Divider,
+    IconButton, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
-import MenuIcon from '@mui/icons-material/Menu';
 import NewWindow from "react-new-window";
 // Custom component libraries
 import { TabPanel } from "../reuse-components";
@@ -28,19 +20,17 @@ import { SelectedActionWindow } from "./action-client";
 import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
-import { useAutoCompleteOptionsFromLocalStorage, useLocalStorage } from "../hooks";
+import { PageContext, PageProps } from "../../App";
 import { Sidebar } from "../sidebar.js";
 import { appConfig } from "../../../app.config.js";
+import { Locator } from "./locator.js";
 
 
 
 export const ThingViewer = () => {
 
     return (
-        <Stack
-            id="viewer-main-vertical-layout"
-            sx={{ flexGrow: 3, display : 'flex', pl : 3, pr : 3 }}
-        >  
+        <Stack id="thing-viewer-main-vertical-layout" sx={{ pl: 1, pr: 1 }}>  
             <FunctionalitiesView />
             <ErrorBoundary />
             <ResponseLogs />
@@ -50,171 +40,11 @@ export const ThingViewer = () => {
 }
 
 
-
-export const Locator = observer(() => {
-
-    const [existingURLs, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('thing-url-text-input')
-    const [currentURL, setCurrentURL] = useState<string>(window.location ? window.location.hash ? window.location.hash.substring(1) : '' : '')
-    const [loadingThing, setLoadingThing] = useState<boolean>(false)
-
-    const thing = useContext(ThingManager) as Thing
-    const { settings } = useContext(PageContext) as PageProps
-
-    const fetchThing = useCallback(async(currentURL : string) => {
-        setLoadingThing(true)
-        await thing.fetch(currentURL, settings.defaultEndpoint)
-        if(!thing.fetchSuccessful) {
-            console.log("could not load thing")
-            if(settings.console.stringifyOutput)
-                console.log("last response from loading thing - ", JSON.stringify(thing.lastResponse, null, 2))
-            else 
-                console.log("last response from loading thing - ", thing.lastResponse)
-            if(thing.errorMessage)
-                console.log(thing.errorMessage)
-            if(thing.errorTraceback)
-                console.log(thing.errorTraceback)
-        } else {
-            if (window.location.hash && currentURL === window.location.hash.substring(1)) {
-                // load successful, remove hash
-                window.location.hash = '';
-            }
-        }
-        setLoadingThing(false)
-    }, [settings])
-
-    useEffect(() => {
-        if(!currentURL)
-            return     
-        fetchThing(currentURL)
-    }, [])
-
-    return (
-        <Stack id="locator-horizontal-layout" direction="row" sx={{ flexGrow : 1, display : 'flex' }}>
-            <LocatorAutocomplete 
-                existingURLs={existingURLs}
-                currentURL={currentURL}
-                setCurrentURL={setCurrentURL}
-                editURLsList={modifyOptions}
-                fetchThing={fetchThing}
-            />
-            <Box id="loader-button-options-box" sx={{ flexGrow: 0.01, display : 'flex', pb : 3}} >
-                <Button
-                    id="load-thing-using-url-locator-button"
-                    size="small"
-                    onClick={async() => await fetchThing(currentURL)}
-                    sx={{ borderRadius : 0 }}
-                >
-                    Load
-                    {loadingThing? <Box sx={{ pl : 1, pt : 0.5 }}><CircularProgress size={20} /></Box>: null }
-                </Button>
-                <Divider orientation="vertical" />
-                <IconButton
-                    id='save-thing-url'
-                    sx={{ borderRadius : 0 }}
-                    onClick={() => modifyOptions(currentURL, 'ADD')}
-                >
-                    <SaveTwoToneIcon />
-                </IconButton>
-                <IconButton
-                    id="open-resource-json-in-new-tab"
-                    onClick={() => window.open(
-                        settings.defaultEndpoint? currentURL + settings.defaultEndpoint :
-                        currentURL )}
-                    sx = {{ borderRadius : 0 }}
-                >
-                    <OpenInNewTwoToneIcon />
-                </IconButton>
-                <Divider orientation="vertical"></Divider>
-                <Button
-                    id="clear-thing"
-                    size="small"
-                    onClick={() => thing.clearState()}
-                    sx = {{ borderRadius : 0 }}
-                >
-                    Clear
-                </Button>
-            </Box>
-        </Stack>
-    )
-})
-
-
-
-type LocatorAutocompleteProps = {
-    existingURLs : string[]
-    currentURL : string
-    setCurrentURL : React.Dispatch<React.SetStateAction<string>>
-    editURLsList : (inputURL : string, operation : 'ADD' | 'REMOVE') => void
-    fetchThing : (currentURL : string) => void
-}
-
-const LocatorAutocomplete = ({ 
-    existingURLs, 
-    currentURL, 
-    setCurrentURL, 
-    editURLsList,
-    fetchThing
-} : LocatorAutocompleteProps) => {
-
-    // show delete button at given option
-    const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
-    const thing = useContext(ThingManager) as Thing
-
-    return (
-        <Autocomplete
-            id="locator-autocomplete"
-            freeSolo
-            disablePortal
-            autoComplete
-            size="small"
-            onChange={(_, name) => {setCurrentURL(name as string)}}
-            value={currentURL}
-            options={existingURLs}
-            sx={{ flexGrow : 1, display: 'flex'}}
-            renderInput={(params) =>
-                <TextField
-                    label="Thing Description URL"
-                    variant="filled"
-                    error={!thing.fetchSuccessful}
-                    sx={{ flexGrow: 0.99, display : 'flex', borderRadius : 0 }}
-                    onChange={(event) => setCurrentURL(event.target.value)}
-                    onKeyDown={async (event) => {
-                        if (event.key === 'Enter') {
-                            await fetchThing(currentURL)
-                        }
-                    }}
-                    {...params}
-                />}
-            renderOption={(props, option : any, {}) => (
-                <li
-                    {...props}
-                    onMouseOver={() => setAutocompleteShowDeleteIcon(option)}
-                    onMouseLeave={() => setAutocompleteShowDeleteIcon('')}
-                >
-                    <Typography
-                        sx={{
-                            display : 'flex', flexGrow : 1,
-                            fontWeight : option === autocompleteShowDeleteIcon? 'bold' : null
-                        }}
-                    >
-                        {option}
-                    </Typography>
-                    {option === autocompleteShowDeleteIcon?
-                    <IconButton size="small" onClick={() => editURLsList(option, 'REMOVE')}>
-                        <DeleteForeverIcon fontSize="small" />
-                    </IconButton> : null }
-                </li>)}
-            />
-    )
-}
-
-
-
 const thingOptions = ['Properties', 'Actions', 'Events', 'Doc/Description']
 
 const FunctionalitiesView = observer(() => {
 
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
     const [currentTab, setCurrentTab] = useState<number>(0)
     const [undock, setUndock] = useState<number>(-1)
@@ -249,25 +79,29 @@ const FunctionalitiesView = observer(() => {
     }, [])
 
     return(
-        <Stack
-            direction='row'
-            sx={{ flexGrow : 1, display : 'flex' }}
-        >
-            <Stack>
-                {undock >= 0?
-                    <IconButton id='undock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={dockWindow}>
-                        <CallReceivedTwoToneIcon fontSize="small"/>
+        <Stack direction='row'>
+            {settings.allowUndocking?
+                <Stack>
+                    {undock >= 0?
+                        <IconButton id='undock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={dockWindow}>
+                            <CallReceivedTwoToneIcon fontSize="small"/>
+                        </IconButton>
+                        :
+                        <IconButton id='dock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={undockWindow}>
+                            <OpenInBrowserTwoToneIcon fontSize="small"/>
+                        </IconButton>
+                    }
+                    
+                    <IconButton id='copy-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={addDuplicateWindow}>
+                        <CopyAllTwoToneIcon fontSize="small"/>
                     </IconButton>
-                    :
-                    <IconButton id='dock-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={undockWindow}>
-                        <OpenInBrowserTwoToneIcon fontSize="small"/>
-                    </IconButton>
-                }
-                <IconButton id='copy-icon-button' size="small" sx={{ borderRadius : 0 }} onClick={addDuplicateWindow}>
-                    <CopyAllTwoToneIcon fontSize="small"/>
-                </IconButton>
-            </Stack>
-            <Stack sx={{ flexGrow : 1, display : 'flex' }} direction={tabOrientation === 'vertical'? 'row' : 'column'}>
+                </Stack>
+                : null
+            }
+            <Stack 
+                sx={{ flexGrow : 1, display : 'flex', overflowX: 'auto' }} 
+                direction={tabOrientation === 'vertical'? 'row' : 'column'}
+            >
                 <Tabs
                     id="thing-options-tabs"
                     variant="scrollable"
@@ -279,7 +113,9 @@ const FunctionalitiesView = observer(() => {
                         borderRight: tabOrientation === 'vertical'? 3 : 1,
                         borderBottom: tabOrientation === 'vertical'? 1 : 3,
                         flexGrow : tabOrientation === 'vertical'? null : 1,
-                        borderColor: 'divider'
+                        borderColor: 'divider',
+                        width: tabOrientation === 'vertical'? 150 : null,
+                        minWidth: tabOrientation === 'vertical'? 150 : null,
                     }}
                 >
                     {thingOptions.map((name : string) =>
@@ -294,8 +130,8 @@ const FunctionalitiesView = observer(() => {
                 </Tabs>
                 <Box
                     sx={{
-                        resize : 'vertical', height : thing.info.id? 400 : null,
-                        overflow : 'auto', flexGrow : 1, border : 1, borderColor : 'divider'
+                        resize : 'vertical', height : thing.info.id? 300 : null,
+                        flexGrow : 1, border : 1, borderColor : 'divider', overflow: 'hidden'
                     }}
                 >
                 {thingOptions.map((name : string, index : number) => {
@@ -355,7 +191,6 @@ const FunctionalitiesView = observer(() => {
 })
 
 
-
 const Functionalities = observer(({ type } : { type : string }) => {
 
     switch(type) {
@@ -372,10 +207,9 @@ const Functionalities = observer(({ type } : { type : string }) => {
 })
 
 
+const InteractionAffordancesView = observer(({ type } : { type : "Properties" | "Actions" | "Events" }) => {
 
-export const InteractionAffordancesView = observer(({ type } : { type : "Properties" | "Actions" | "Events" }) => {
-
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     // interaction affordance object selection number
     const objects = thing.getInteractionAffordances(type)
@@ -389,11 +223,11 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
     }, [setSelectedIndex])
 
     return (
-        <Stack direction='row' sx={{ flexGrow: 1 }} >
+        <Stack direction='row' sx={{ flexGrow: 1, overflowX: { xs: 'scroll', sm: 'auto' }, overflowY: 'hidden' }} >
             <Box
                 id="interaction-affordance-object-selection-list-layout" 
                 sx={{ 
-                    width : "50%", resize : 'horizontal',
+                    width : "50%", resize : 'horizontal', minWidth: 300,
                     overflow : 'auto', height : "100%"
                 }}
             >
@@ -401,7 +235,6 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                     id="interaction-affordance-objects-list"
                     dense
                     disablePadding
-                    sx={{ flexGrow : 1 }}
                 >
                     {objects.map((object : ResourceInformation, index : number) => {
                         return (
@@ -426,12 +259,18 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                                                 }}
                                             >
                                                 <span>{object.name}</span>
-                                                {object.type?
-                                                    <span style={{color : 'rgba(0, 0, 0, 0.5)'}}>
-                                                        {object.type}
+                                                {
+                                                // @ts-expect-error
+                                                object.type || object.oneOf ?
+                                                    <span style={{color : 'rgba(0, 0, 0, 0.5)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                        {object.type ? object.type : 
+                                                        (object as PropertyInformation).oneOf ? 
+                                                        (object as PropertyInformation).oneOf.map(item => item.type).join(' | ') 
+                                                        : null
+                                                        }
                                                     </span> 
-                                                    : 
-                                                    null
+                                                    : null
+                                                    
                                                 }
                                             </Typography>
                                         }
@@ -442,10 +281,16 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
                     })}
                 </List>
             </Box>
-            <Divider orientation="vertical" sx={{ borderWidth : 2 }} />
-            <Box sx={{ width : "50%", pl : 2, pr : 1, overflow : 'auto', height : '100%' }}>
+            <Divider id="interaction-affordance-view-divider" orientation="vertical" sx={{ borderWidth : 2 }} />
+            <Box 
+                id="interaction-affordance-object-after-selected-execution-layout"
+                sx={{ 
+                    width: '50%', pl : 1, pr : 2, minWidth: 300,
+                    overflowY : 'scroll', overflowX: 'auto', height : '100%' 
+                }}
+            >
                 {
-                    objects[selectedIndex] ?
+                    objects[selectedIndex]?
                     <InteractionAffordanceSelect
                         object={objects[selectedIndex]}
                         type={type}
@@ -457,13 +302,10 @@ export const InteractionAffordancesView = observer(({ type } : { type : "Propert
 })
 
 
-
-type InteractionAffordanceSelectProps = {
+const InteractionAffordanceSelect = ({ object, type } : {
     object : ResourceInformation
     type : string
-}
-
-export const InteractionAffordanceSelect = ({ object, type } : InteractionAffordanceSelectProps) => {
+}) => {
     switch(type) {
         case 'Events' : return <SelectedEventWindow event={object as EventInformation} />                
         case 'Actions' : return <SelectedActionWindow action={object as ActionInformation} />                
@@ -473,31 +315,12 @@ export const InteractionAffordanceSelect = ({ object, type } : InteractionAfford
 
 
 
-export type PageProps = {
-    settings : ClientSettingsType
-    updateSettings : React.Dispatch<React.SetStateAction<ClientSettingsType>>
-    showSettings : boolean
-    setShowSettings : React.Dispatch<React.SetStateAction<boolean>> | Function
-    updateLocalStorage : (value : any) => void
-}
-
-export const ThingManager = createContext<Thing | null>(null)
-export const PageContext = createContext<any>({
-    settings : defaultClientSettings,
-    updateSettings : () => {},
-    showSettings : false,
-    setShowSettings : () => {},
-    updateLocalStorage : (_ : any) => {},
-})
+export const ThingContext = createContext<Thing | null>(null)
 
 export const ThingClient = () => {
 
-    const [_existingSettings, updateLocalStorage] = useLocalStorage('thing-viewer-settings', defaultClientSettings)
-    const [settings, updateSettings] = useState<ClientSettingsType>(_existingSettings)
-    const [showSettings, setShowSettings] = useState<boolean>(false)
-    const [showSidebar, setShowSidebar] = useState(false)
-    const [pageState, _] = useState({ settings, updateSettings, showSettings, setShowSettings, updateLocalStorage })
     const thing = useRef<Thing>(new Thing())
+    const { showSettings, showSidebar, setShowSidebar } = useContext(PageContext) as PageProps
 
     /* 
     Thing Client composes Thing Viewer, Location and Settings components which controls the settings of the client
@@ -513,9 +336,10 @@ export const ThingClient = () => {
             // @ts-expect-error
             const servient = new Wot.Core.Servient(); 
             // Wot.Core is auto-imported by wot-bundle.min.js
+
             const IsOurWebsite = window.location.hostname.endsWith('hololinked.dev') || window.location.hostname.endsWith('hololinked.net')
             const IsSSLWebsite = window.location.hostname.endsWith('hololinked.dev')
-   
+                
             try {
                 if((IsOurWebsite && IsSSLWebsite) || (!IsOurWebsite && appConfig.useSSL)){
                     // @ts-expect-error
@@ -550,39 +374,18 @@ export const ThingClient = () => {
 
 
     return (
-        <Box
-            id='client-layout-box'
-            sx={{pt : 3, display : 'flex', flexGrow : 1, pb : 5}}
-        >
-            <PageContext.Provider value={pageState}>
-                <ThingManager.Provider value={thing.current}>
-                    <Stack id="thing-viewer-page-layout" sx={{ flexGrow: 1, display: 'flex'}}>
-                        <Stack direction="row" sx={{ flexGrow: 1, display : 'flex' }}>
-                            <Box sx={{ display : 'flex', pb : 3 }}>
-                                <IconButton id='view-sidebar-icon' sx={{ borderRadius : 0 }} onClick={() => setShowSidebar(true)}>
-                                    <MenuIcon />
-                                </IconButton>
-                                {!showSettings ?
-                                    <IconButton id='show-settings-icon' onClick={() => setShowSettings(true)} sx={{ borderRadius : 0 }}>
-                                        <SettingsTwoToneIcon />
-                                    </IconButton> : 
-                                    <IconButton id='hide-settings-icon' onClick={() => setShowSettings(false)} sx={{ borderRadius : 0 }}>
-                                        <ArrowBackTwoToneIcon />
-                                    </IconButton>
-                                }
-                            </Box>
-                            <Locator />
-                        </Stack>
-                        {showSettings?
-                            <AppSettings globalState={null} />
-                            : 
-                            <ThingViewer />
-                        }
-                        <Sidebar open={showSidebar} setOpen={setShowSidebar} />
-                    </Stack>
-                </ThingManager.Provider>
-            </PageContext.Provider>
-        </Box>
+        <ThingContext.Provider value={thing.current}>
+            <Box id='client-layout-box' sx={{ pt: 0.5 }}>
+                <Stack id="thing-viewer-page-layout">
+                    <Locator />
+                    {showSettings?
+                        <AppSettings globalState={null} /> : 
+                        <ThingViewer />
+                    }
+                </Stack>
+                <Sidebar open={showSidebar} setOpen={setShowSidebar} />    
+            </Box>
+        </ThingContext.Provider>
     )
 }
 

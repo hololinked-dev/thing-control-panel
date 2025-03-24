@@ -74,6 +74,7 @@ export class PropertyInformation extends ResourceInformation {
     observable : boolean
     readOnly : boolean
     default : any
+    oneOf: { [key : string] : any }[]
     // following are owr own
     allow_None : boolean
     class_member : boolean
@@ -122,9 +123,14 @@ export class PropertyInformation extends ResourceInformation {
     }
 
     // types for which JSON input field should be shown instead of raw input field
-    JSONInputParameterTypes = ['Property', 'ClassSelector', 'Tuple', 'List', 'TypedList', 
+    JSONInputParameterTypes = [
+                    // param and python type
+                    'Property', 'ClassSelector', 'Tuple', 'List', 'TypedList', 
                     'TypedDict', 'Iterable', 'Selector', 'TupleSelector', 'FileSelector', 
-                    'MultiFileSelector', 'TypedKeyMappingsDict']
+                    'MultiFileSelector', 'TypedKeyMappingsDict',
+                    // JSON types
+                    'object', 'array'
+                ]
 
     get chips() : string[] {
         let Chips : string[] = []
@@ -139,7 +145,7 @@ export class PropertyInformation extends ResourceInformation {
         if(this.readOnly)
             return 'RAW'  // check readonly always first
         else if(this.JSONInputParameterTypes.includes(this.type)) 
-            return 'JSON'
+            return 'code-editor'
         return 'RAW'
     }
 }
@@ -219,6 +225,7 @@ export class Thing {
     servient : any // Wot.Core.Servient
     wot : any // Wot.Core.WoT
     fetchSuccessful : boolean
+    tdURL : string
     // error displays
     errorMessage :  string
     errorTraceback :  string[] | null 
@@ -287,6 +294,7 @@ export class Thing {
                     this.setLastResponse(response.data)
                     this.resetError()
                     this.setFetchSuccessful(true)
+                    this.tdURL = baseurl + endpointURL
                 }
             }
             else if(response.data && response.data.exception) {

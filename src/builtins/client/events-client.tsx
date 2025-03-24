@@ -3,27 +3,26 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 // Custom functional libraries
 // Internal & 3rd party component libraries
-import { Button, Stack, ButtonGroup, Link, Tabs, Tab } from "@mui/material"
+import { Button, Stack, ButtonGroup, Link, Tabs, Tab, FormControlLabel, Checkbox } from "@mui/material"
 // Custom component libraries 
 import { EventInformation } from './state'
 import { Thing } from "./state";
-import { PageContext, PageProps, ThingManager } from "./view";
-import { ObjectInspector, chromeLight } from "react-inspector";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
 import { TabPanel } from "../reuse-components";
+import { TDDocViewer } from "./doc-viewer";
 
 
 
-type SelectedEventWindowProps =  { 
-    event : EventInformation
-}
+export const Subscription = observer(( { event } :  { event : EventInformation }) => {
 
-export const Subscription = observer(( { event } : SelectedEventWindowProps) => {
-
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
 
     const [eventURL, setEventURL] = useState<string>(event.forms[0].href)
     const [clientChoice, setClientChoice] = useState<string>("axios")
+    const [skipDataSchemaValidation, setSkipDataSchemaValidation] = useState(false)
+    
 
     useEffect(() => {
         setEventURL(event.forms[0].href)
@@ -32,7 +31,7 @@ export const Subscription = observer(( { event } : SelectedEventWindowProps) => 
     const streamEvent = useCallback(() => {
         if (clientChoice === "node-wot") {
             thing.client.subscribeEvent(event.name, async (data : any) => {
-                data.ignoreValidation = true
+                data.ignoreValidation = skipDataSchemaValidation
                 const value = await data.value()
                 if(settings.console.stringifyOutput)    
                     console.log(value)            
@@ -58,7 +57,7 @@ export const Subscription = observer(( { event } : SelectedEventWindowProps) => 
             }
             thing.addEventSource(eventURL, source)
         }
-    }, [thing, eventURL, settings, clientChoice, event])
+    }, [thing, eventURL, settings, clientChoice, event, skipDataSchemaValidation])
 
     const stopEvent = useCallback(() => {
         if (clientChoice === "node-wot") {
@@ -80,18 +79,18 @@ export const Subscription = observer(( { event } : SelectedEventWindowProps) => 
     }, [thing, eventURL, clientChoice, event, settings])
 
     return(
-        <Stack>
+        <Stack sx={{ flexGrow: 1, display : 'flex' }}>
             <Link 
                 // @ts-ignore
                 onClick={() => window.open(eventURL)} 
-                sx={{ display : 'flex', alignItems : "center", cursor:'pointer',  pl : 2, pt : 1, fontSize : 18,
-                    color : "#0000EE" }}
+                sx={{ display : 'flex', alignItems : "center", cursor:'pointer', 
+                    pt : 1, fontSize : 18, color : "#0000EE" }}
                 underline="hover"
                 variant="caption"
             >
                 {eventURL}
             </Link> 
-            <Stack direction = "row" sx={{ flexGrow: 1, display : 'flex', pl : 1, pt : 1 }}>
+            <Stack direction = "row" sx={{ pt : 1 }}>
                 <ButtonGroup 
                     variant="contained"
                     sx = {{ pr : 2 }}
@@ -114,15 +113,24 @@ export const Subscription = observer(( { event } : SelectedEventWindowProps) => 
                     </Button>
                 </ButtonGroup>
             </Stack>
+            <FormControlLabel
+                label="skip data schema validation"
+                control={
+                    <Checkbox
+                        size="small"
+                        checked={skipDataSchemaValidation}
+                        onChange={(event) => setSkipDataSchemaValidation(event.target.checked)}
+                    />
+                }
+            />
         </Stack>
     )
 })
 
 
-
 const eventFields = ['Subscription', 'Doc']
 
-export const SelectedEventWindow = (props : SelectedEventWindowProps) => {
+export const SelectedEventWindow = ({ event } : { event : EventInformation }) => {
 
     const [eventFieldsTab, setEventFieldsTab] = useState(0);
     const handleTabChange = useCallback((_ : React.SyntheticEvent, newValue: number) => {
@@ -156,7 +164,7 @@ export const SelectedEventWindow = (props : SelectedEventWindowProps) => {
                 >
                     <EventTabComponents 
                         tab={name} 
-                        event={props.event}
+                        event={event}
                     />
                 </TabPanel>
             )} 
@@ -165,28 +173,15 @@ export const SelectedEventWindow = (props : SelectedEventWindowProps) => {
 }
 
 
-
-type EventTabComponentsProps = {
+const EventTabComponents = ( { tab, event } : {
     tab : string
     event : EventInformation
-}
+}) => {
 
-
-const EventTabComponents = ( { tab, event } : EventTabComponentsProps) => {
-
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
 
     switch(tab) {
-        case "Doc" : return <ObjectInspector 
-                                data={thing.td["events"][event.name]} 
-                                expandLevel={3}     
-                                // @ts-ignore
-                                theme={{
-                                    ...chromeLight,                          
-                                    BASE_FONT_SIZE: '14px'
-                                }}
-                            />
-                        
+        case "Doc" : return <TDDocViewer resource={event} type="event" />
         default : return <Subscription event={event} />
     }
 }

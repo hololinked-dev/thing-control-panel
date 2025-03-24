@@ -1,14 +1,17 @@
 // Internal & 3rd party functional libraries
 import { useState, useCallback } from "react";
+import * as React from "react";
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import NewWindow from "react-new-window";
-import { Backdrop, Box, CircularProgress, IconButton, Stack, Typography } from "@mui/material"
+import { Backdrop, Box, CircularProgress, IconButton, Stack, Typography,
+    TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button
+ } from "@mui/material"
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
 // Custom component libraries 
 import { styled } from '@mui/system';
 import {TablePagination, tablePaginationClasses as classes } from '@mui/base/TablePagination';
-import React from "react";
+
 
 
 type TabPanelProps = {
@@ -34,7 +37,7 @@ export const TabPanel = (props: TabPanelProps) => {
             }}      
         >
             {value === index && (
-                <Box sx={{ flexGrow: 1, display: 'flex', height : '100%' }}>
+                <Box sx={{ display: 'flex', height : '100%' }}>
                     {children}
                 </Box>
             )}
@@ -359,5 +362,64 @@ const CustomTablePagination = styled(TablePagination)`
 
 
 
+export const ZoomedInput = ({ label, inputValue, setInputValue, error, ...props } : { 
+    label: string, 
+    inputValue: string,
+    setInputValue : React.Dispatch<React.SetStateAction<string>> 
+    error: boolean,
+    props? : any
+}) => {
+    
+    if(!props) props = {}
+    const [open, setOpen] = useState(false);
+    const [tempValue, setTempValue] = useState(""); // Temporary value in dialog
 
+    const handleOpen = () => {
+        setTempValue(inputValue); // Keep existing value
+        setOpen(true)
+    };
+
+    const handleClose = () => {
+        setOpen(false)
+    };
+
+    const handleSave = () => {
+        setInputValue(tempValue); // Save back to main input
+        setOpen(false)
+    }
+
+    return (
+        <>
+            <TextField
+                label={label}
+                value={inputValue}
+                onClick={handleOpen} // Open dialog on click
+                error={error}
+                {...props}
+            />
+            <Dialog open={open} onClose={handleClose} fullWidth>
+                <DialogTitle>{label}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        size="small"
+                        value={tempValue}
+                        error={error}
+                        onChange={(e) => setTempValue(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button size="small" onClick={handleClose}>Cancel</Button>
+                    <Button size="small" onClick={() => setTempValue("")}>Clear</Button>
+                    <Button size="small" onClick={handleSave} variant="contained" color="secondary">
+                        Save
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    )
+}
 

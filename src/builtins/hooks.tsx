@@ -34,14 +34,22 @@ export const useLocalStorage = (field : string, defaultValue : any) => {
     const updateLocalStorage = useCallback((value: any) => {
         const lobj = fetchFieldFromLocalStorage(null, {});
         // console.log("total values in local storage before", lobj)   
-        lobj[field] = value;
-        // localStorage.setItem('thing-control-panel', JSON.stringify(lobj));
-        console.log("total values in local storage after", lobj)   
+        lobj[field] = value; // local storage is a nested JSON object
+        if(!lobj['app-settings'] || !lobj['app-settings']['useLocalStorage']) {
+            console.info(`local storage is disabled, cannot update field ${field} with value ${value}, changes will be lost on refresh`)
+            return
+        }
+        localStorage.setItem('thing-control-panel', JSON.stringify(lobj));
+        // console.log("total values in local storage for field", field, lobj)   
     }, [field]);
 
     return [obj, updateLocalStorage];
+}
 
 
+export const clearLocalStorage = () => {
+    localStorage.removeItem('thing-control-panel')
+    console.info("local storage cleared")
 }
 
 

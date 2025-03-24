@@ -6,26 +6,24 @@ import { observer } from "mobx-react-lite";
 import { getFormattedTimestamp,  asyncRequest, parseWithInterpretation } from "../utils";
 // Internal & 3rd party component libraries
 import { Stack, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-    RadioGroup, Box, Radio, useTheme, TextField, 
-    Checkbox} from "@mui/material";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-crimson_editor"
-import "ace-builds/src-noconflict/ext-language_tools";
+    RadioGroup, Radio, Checkbox,
+    Box} from "@mui/material";
 // Custom component libraries 
 import { TabPanel } from "../reuse-components";
 import { PropertyInformation, Thing } from "./state";
-import { PageContext, PageProps, ThingManager } from "./view";
-import { ObjectInspector } from "react-inspector";
+import { ThingContext } from "./index";
+import { PageContext, PageProps } from "../../App";
+import { InputChoice } from "./input-components";
+import { TDDocViewer } from "./doc-viewer";
 
 
 
 const propertyOptions = ['Execute', 'Doc']
 
-export const SelectedPropertyWindow = ( { property } : { property : PropertyInformation}) => {
+export const SelectedPropertyWindow = ({ property } : { property : PropertyInformation}) => {
     // No need to use observer HOC as either property prop changes or child components of this component 
     // read and manipulate client state 
-    // const thing = useContext(ThingManager) as Thing
+    // const thing = useContext(ThingContext) as Thing
     
     // current tab of property options
     const [propertyOptionsTab, setPropertyOptionsTab] = useState(0);
@@ -36,13 +34,13 @@ export const SelectedPropertyWindow = ( { property } : { property : PropertyInfo
     }, [])
 
     return (
-        <Stack id="selected-property-layout" sx={{ flexGrow : 1 }} >
+        <Stack id="selected-property-layout" sx={{ flexGrow: 1, display: 'flex' }}>
             <Tabs
                 id="selected-property-options-tab"
                 variant="scrollable"
                 value={propertyOptionsTab}
                 onChange={handleTabChange}
-                sx={{ borderBottom: 2, borderColor: 'divider', flexGrow : 1, display : 'flex' }}
+                sx={{ borderBottom: 2, borderColor: 'divider' }}
             >
                 {propertyOptions.map((name : string) => {
                     return (
@@ -61,10 +59,11 @@ export const SelectedPropertyWindow = ( { property } : { property : PropertyInfo
                         key={"selected-property-options-tabpanel-"+name}
                         tree="selected-property-options-tab"
                         value={propertyOptionsTab} 
-                        index={index} 
+                        index={index}
                     >
                         <PropertyTabComponents tab={name} property={property} />
                     </TabPanel>
+                    
                 )} 
             )} 
         </Stack>
@@ -72,32 +71,22 @@ export const SelectedPropertyWindow = ( { property } : { property : PropertyInfo
 }
 
 
-
-type PropertyTabComponentsProps = { 
+export const PropertyTabComponents = ({ tab, property } : { 
     tab : string
     property : PropertyInformation
-}
-
-export const PropertyTabComponents = ( { tab, property } : PropertyTabComponentsProps) => {
-    const thing = useContext(ThingManager) as Thing
+}) => {
+    
     switch(tab) {
-        case "Execute"  : return (
-                                <RWO property={property}></RWO>
-                            )
-        default : return (
-                        <ObjectInspector 
-                            data={thing.td.properties[property.name]}
-                            expandLevel={3} 
-                        />
-                    ) 
+        case "Execute" : return <RWO property={property}></RWO> 
+        default : return <TDDocViewer resource={property} type="property"></TDDocViewer>
     }
 }
 
 
-
-export const RWO = ( { property } : { property : PropertyInformation}) => {
+// RWO = read write observe
+export const RWO = ({ property } : { property: PropertyInformation }) => {
     // no need observer HOC as well
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
     // property input choice - raw value or JSON
     const [inputChoice, setInputChoice ] = useState(property.inputType) // JSON and RAW are allowed
@@ -120,7 +109,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
     const RWProp = useCallback(async (mode : 'READ' | 'WRITE' ) => {
         const requestTime = getFormattedTimestamp()
         const requestTime_ = Date.now()
-        let request : AxiosRequestConfig, consoleOutput : string | null = null, response
+        let request : AxiosRequestConfig, consoleOutput : string | null = null, response: any
         try {
             /* 
             order -
@@ -147,16 +136,18 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                 response = interaction output
                 console output = received data
                 */
-                if(mode === 'READ') 
+                if(mode === 'READ') {
                     response = await thing.client.readProperty(property.name)
-                else 
-                    response = await thing.client.writeProperty(property.name, 
-                                            parseWithInterpretation(propValue, property.type))    
-                thing.setLastResponse(response)
-                if(response) {
+                    thing.setLastResponse(response)
                     response.ignoreValidation = skipDataSchemaValidation
                     consoleOutput = await response.value()
-                }           
+                }
+                else {
+                    response = await thing.client.writeProperty(property.name, 
+                                        parseWithInterpretation(propValue, property.type))    
+                    thing.setLastResponse(response)
+                    consoleOutput = 'operation performed'
+                }
                 thing.resetError()
             }
             else {
@@ -192,7 +183,7 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
             if(settings.console.stringifyOutput) 
                 console.log(JSON.stringify(consoleOutput, null, 2))
             else 
-            console.log(consoleOutput)    
+                console.log(consoleOutput)    
         } 
         catch(error : any){
             console.log(error)
@@ -216,29 +207,37 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
         setTimeoutValid(timeoutValid)
     }, [timeout, setTimeout])
 
-
     return (
-        <Stack id="property-rw-client" sx={{ flexGrow : 1, pt: 2 }}>
-            <PropertyInputChoice 
-                id='property-rw-client-input'
-                property={property} 
-                choice={inputChoice} 
-                value={propValue} 
-                setValue={setPropValue}
-                RWHook={RWProp}
-            />
-            <Stack id='property-rw-client-options-layout' direction = "row" sx={{ flexGrow : 1 }}>
-                <FormControl sx={{pl : 2, pt : 2}}> 
-                    <RadioGroup
-                        id="input-choice-group"
-                        row
-                        value={inputChoice}
-                        onChange={handleInputSelection}
-                    >
-                        <FormControlLabel value="RAW" control={<Radio size="small" />} label="raw" />
-                        <FormControlLabel value="JSON" control={<Radio size="small" />} label="code editor" />
-                    </RadioGroup>
-                </FormControl>
+        <Stack id="property-rw-client" sx={{ pt: 1, flexGrow: 1, display: 'flex' }}>
+            {property.readOnly? null : 
+                <InputChoice 
+                    jsonSchema={property} 
+                    // remember, property is a subclass of data schema which is basically JSON schema
+                    choice={inputChoice} 
+                    value={propValue} 
+                    setValue={setPropValue}
+                />
+            }
+            <Stack 
+                id='property-rw-client-options-layout' 
+                spacing={1} 
+                useFlexGap 
+                direction="row" 
+                sx={{ flexWrap: 'wrap' }}
+            >
+                {property.readOnly? null :
+                    <FormControl> 
+                        <RadioGroup
+                            id="input-choice-group"
+                            row
+                            value={inputChoice}
+                            onChange={handleInputSelection}
+                        >
+                            <FormControlLabel value="RAW" control={<Radio size="small" />} label="raw" />
+                            <FormControlLabel value="code-editor" control={<Radio size="small" />} label="code editor" />
+                        </RadioGroup>
+                    </FormControl>
+                }
                 {/* <Box sx={{ pl : 2, pt: 2, pr: 2, maxWidth : 100 }} >
                     <TextField
                         id='timeout-input'
@@ -252,107 +251,36 @@ export const RWO = ( { property } : { property : PropertyInformation}) => {
                 <ButtonGroup 
                     id='rw-buttons'
                     variant="contained"
-                    sx = {{pt :2, pr : 2, pb : 2}}
                     disableElevation
                     color="secondary"
                 >
-                    <Button 
-                        sx={{ flexGrow: 0.05 }} 
-                        onClick={readProp}
-                    >
+                    <Button onClick={readProp}>
                         Read
                     </Button>
                     <Button 
-                        sx={{ flexGrow: 0.05 }} 
                         disabled={property.readOnly}
                         onClick={writeProp}
                     >
                         Write
                     </Button>
                 </ButtonGroup>
+                {property.observable? 
+                    <Observe property={property} skipDataSchemaValidation={skipDataSchemaValidation} />
+                    : null
+                }   
                 <FormControlLabel
                     label="skip data schema validation"
-                    control={<Checkbox
-                                size="small"
-                                checked={skipDataSchemaValidation}
-                                onChange={(event) => setSkipDataSchemaValidation(event.target.checked)}
-                            />}
-                    sx={{ pl : 1 }}
+                    control={
+                        <Checkbox
+                            size="small"
+                            checked={skipDataSchemaValidation}
+                            onChange={(event) => setSkipDataSchemaValidation(event.target.checked)}
+                        />
+                    }
                 />
             </Stack>
-            {property.observable? <Observe property={property} skipDataSchemaValidation={skipDataSchemaValidation}></Observe> : null}   
         </Stack>
     )
-}
-
-
-
-type PropertyInputChoiceProps = {
-    id : string 
-    choice : string 
-    property : PropertyInformation
-    value : any
-    setValue : any
-    RWHook : any
-}
-
-export const PropertyInputChoice = (props : PropertyInputChoiceProps) => {
-
-    const theme = useTheme()
-    switch(props.choice) {
-        case 'JSON' : return <Box id="ace-editor-box" sx= {{ flexGrow : 1 }}>
-                                <Stack direction='row' sx={{ flexGrow : 1 }}>
-                                    <AceEditor
-                                        name="prop-client-json-input"
-                                        placeholder={props.property.readOnly? "disabled" : "enter value here" }
-                                        mode="json"
-                                        theme="crimson_editor"
-                                        value={
-                                            props.property.readOnly? props.value : 
-                                                props.property.type === 'object'? 
-                                                    // @ts-expect-error
-                                                    props.property.properties ? 
-                                                        // @ts-expect-error
-                                                        `{${Object.keys(props.property.properties).map(key => `\n\t"${key}": `).join(',').slice(0, -1)}\n}` 
-                                                        : ''
-                                                : ''
-                                        }
-                                        onChange={(newValue) => props.setValue(newValue)}
-                                        fontSize={18}
-                                        showPrintMargin={true}
-                                        showGutter={true}
-                                        highlightActiveLine={true}
-                                        wrapEnabled={true}
-                                        style={{
-                                            backgroundColor : theme.palette.grey[100],
-                                            maxHeight : 200,
-                                            overflow : 'scroll',
-                                            scrollBehavior : 'smooth',
-                                            width : "100%",
-                                        }}
-                                        setOptions={{
-                                            enableBasicAutocompletion: false,
-                                            enableLiveAutocompletion: false,
-                                            enableSnippets: false,
-                                            showLineNumbers: true,
-                                            tabSize: 4,
-                                            readOnly : props.property.readOnly 
-                                        }}
-                                    />
-                                </Stack>
-                            </Box>
-        default : return <TextField
-                            variant="outlined"
-                            multiline
-                            size="small"
-                            maxRows={300}
-                            onChange={(event) => props.setValue(event.target.value)}
-                            disabled={props.property.readOnly}
-                            label={props.property.readOnly? "read-only" : "data"}
-                            helperText={props.property.readOnly? "disabled" : "press enter to expand"}
-                            sx={{ flexGrow: 1 }}
-                        />
-    }
 }
 
 
@@ -374,7 +302,7 @@ function stringify(val, depth, replacer, space) {
 
 const Observe = observer(({ property, skipDataSchemaValidation } : { property : PropertyInformation, skipDataSchemaValidation : boolean}) => {
     // This component will error if property is not observable
-    const thing = useContext(ThingManager) as Thing
+    const thing = useContext(ThingContext) as Thing
     const { settings } = useContext(PageContext) as PageProps
 
     const [eventURL, setEventURL] = useState<string>(property.forms.find(form => form.op === 'observeproperty').href)
@@ -438,29 +366,25 @@ const Observe = observer(({ property, skipDataSchemaValidation } : { property : 
         }
     }, [thing, eventURL, clientChoice, property])
 
-
     return (
-        <>
-            <ButtonGroup
-                id='observe-buttons'
-                variant="contained"
-                sx = {{ pt :2, pr : 2, pb : 2}}
-                disableElevation
-                color="secondary"
+        <ButtonGroup
+            id='observe-buttons'
+            variant="contained"
+            disableElevation
+            color="secondary"
+        >
+            <Button 
+                disabled={thing.eventSources[property.name] !== undefined}
+                onClick={observeProp}
             >
-                <Button 
-                    disabled={thing.eventSources[property.name] !== undefined}
-                    onClick={observeProp}
-                >
-                    Observe
-                </Button>
-                <Button 
-                    disabled={!thing.eventSources[property.name]}
-                    onClick={unobserveProp}
-                >
-                    Stop
-                </Button>
-            </ButtonGroup>
-        </>
+                Observe
+            </Button>
+            <Button 
+                disabled={!thing.eventSources[property.name]}
+                onClick={unobserveProp}
+            >
+                Stop
+            </Button>
+        </ButtonGroup>
     )
 })
