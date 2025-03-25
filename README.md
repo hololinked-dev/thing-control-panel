@@ -48,7 +48,6 @@ After you load, your defined properties, actions and events are shown. You can f
 ![Execute Actions](readme-assets/actions.png)
 ![Stream Events](readme-assets/events.png)
 
-
 Supported ops are
 - read, write & observe property
 - invoke action
@@ -70,10 +69,14 @@ This file contains certain configurations that can be modified according to your
 
 - `useSSL` - when set to `true`, the app will rendered with a self signed SSL certificate from vite, and the clients will be forced to use SSL. 
 
+### Some More Images
+
 <p float="left">
     <img src="readme-assets/surface-pro.png" alt="Tablet View" width="75%" />
     <img src="readme-assets/phone.png" alt="Phone View" width="20%" />
 </p>
+
+![TD Fragment View](readme-assets/object-inspector.png)
 
 ### To Do
 
