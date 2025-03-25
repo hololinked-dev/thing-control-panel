@@ -48,6 +48,7 @@ After you load, your defined properties, actions and events are shown. You can f
 ![Execute Actions](readme-assets/actions.png)
 ![Stream Events](readme-assets/events.png)
 
+
 Supported ops are
 - read, write & observe property
 - invoke action
@@ -69,13 +70,15 @@ This file contains certain configurations that can be modified according to your
 
 - `useSSL` - when set to `true`, the app will rendered with a self signed SSL certificate from vite, and the clients will be forced to use SSL. 
 
+<p float="left">
+    <img src="readme-assets/surface-pro.png" alt="Tablet View" width="75%" />
+    <img src="readme-assets/phone.png" alt="Phone View" width="20%" />
+</p>
+
 ### To Do
 
 ##### Contributors welcome. Feel free to also propose new ideas or add more ops. There are also similar projects available from Web of Things community. 
 
-- Improvements in viewing TD, especially for events as its shown right below 
-- Settings are not saved correctly in browser
-- Responsive layout for smaller screens
 - Packaging in Electron
 - Observe all properties, subscribe all events & top level forms
 
