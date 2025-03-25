@@ -346,14 +346,14 @@ export const ThingClient = () => {
                     servient.addClientFactory(new Wot.Http.HttpsClientFactory({ allowSelfSigned : true }))
                     // @ts-expect-error
                     servient.addClientFactory(new Wot.WebSocket.WebSocketSecureClientFactory({ allowSelfSigned : true }))
-                    console.log("added HTTPS and WSS client factories, HTTP & WS clients not supported although Thing Description may be fetched")
+                    console.log("added HTTPS and WSS clients, HTTP & WS (non-SSL version) clients not supported although Thing Description may be fetched")
                 }
                 else {
                     // @ts-expect-error
                     servient.addClientFactory(new Wot.Http.HttpClientFactory())
                     // @ts-expect-error
                     servient.addClientFactory(new Wot.WebSocket.WebSocketClientFactory())
-                    console.log("added non-SSL HTTP and WS client factories, HTTPS and WSS clients not supported although Thing Description may be fetched")
+                    console.log("added non-SSL HTTP and WS client factories, HTTPS and WSS (SSL version) clients not supported although Thing Description may be fetched")
                 }
                 // servient.addClientFacotry(new Wor)
                 servient.start().then((WoT : any) => {

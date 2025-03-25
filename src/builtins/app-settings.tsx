@@ -362,7 +362,7 @@ const ClearLocalStorageButton = () => {
                 variant='contained'    
                 color='warning'
             >
-                Clear Local Storage 2
+                Clear Local Storage
             </Button>
             <Dialog
                 open={open}

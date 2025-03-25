@@ -88,6 +88,7 @@ const OnLoadMessage = () => {
                     <li>please do report security issues at the GitHub Repository</li>
                 </ul>
                 Please use it at your own risk. This website does not use cookies. <br />
+                See sidebar for examples.
                 {settings.useLocalStorage ?
                     <FormControlLabel 
                         label="Dont show this message again"
