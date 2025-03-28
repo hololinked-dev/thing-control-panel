@@ -5,7 +5,7 @@ implemented with [`hololinked`](https://github.com/VigneshVSV/hololinked). Suita
 test properties, actions and events or generic use purposes to interact with the Thing. 
 
 The GUI is only coming up, its still rough on the edges. If anything is not upto your standard or buggy/broken,
- please do feel free to reach me, or open a discussion in the discussions tab or an issue. 
+ please do feel free to reach me, open a discussion in the discussions tab or an issue, or contribute to an existing issue. 
 <br>
 [![email](https://img.shields.io/badge/email%20me-brown)](mailto:vignesh.vaidyanathan@hololinked.dev) [![ways to contact me](https://img.shields.io/badge/ways_to_contact_me-brown)](https://hololinked.dev/contact) <br>
 
@@ -28,6 +28,15 @@ If you intend to self host or use as a desktop app:
 ```npm run build``` to build and host with your own HTTP server <br/>
 
 This application is written in plain React and therefore CSR. It is intended to keep it like that.
+
+### Examples
+
+| Device | **SSL** | **Non-SSL** |
+|--------|---------|-------------|
+| Oscilloscope Simulator | [Link](https://control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td) | [Link](http://no-ssl-control-panel.hololinked.net/#http://examples.hololinked.net/simulations/spectrometer/resources/wot-td) |
+| Data Schema Thing | [Link](https://control-panel.hololinked.dev/#https://external-examples.hololinked.dev/data-schema-thing) | [Link](http://no-ssl-control-panel.hololinked.net/#http://external-examples.hololinked.net/data-schema-thing) |
+| Advanced Coffee Machine | [Link](https://control-panel.hololinked.dev/https://external-examples.hololinked.dev/advanced-coffee-machine) | [Link](http://no-ssl-control-panel.hololinked.net/#http://external-examples.hololinked.net/advanced-coffee-machine) |
+| Spectrometer Simulator | [Link](https://control-panel.hololinked.dev/https://examples.hololinked.dev/simulations/spectrometer/resources/wot-td) | [Link](http://no-ssl-control-panel.hololinked.net/#http://examples.hololinked.net/simulations/spectrometer/resources/wot-td) |
 
 ### Usage
 
@@ -78,16 +87,12 @@ This file contains certain configurations that can be modified according to your
 
 ![TD Fragment View](readme-assets/object-inspector.png)
 
-### To Do
+### Contributing
 
-##### Contributors welcome. Feel free to also propose new ideas or add more ops. There are also similar projects available from Web of Things community. 
+Contributors welcome. 
 
-- Packaging in Electron
-- Observe all properties, subscribe all events & top level forms
+A Scrum workflow is followed for development. You can take a issue, we will assign a timeline/sprint and review it once the sprint is over. Of course, as an individual contributor there is no need to follow this as its all free work, but it will help us to keep track of the issues and features.
 
-Possible further ideas
-- Database viewer (i.e. viewer of properties that are stored in database)
-- Log Viewer does not work correctly, although its almost complete. 
-- Graphical data acquisition into file using events
+Meeting date: TBD, once every month, to be started in April 2025. 
 
-
+Feel free to also propose new ideas or add more WoT ops. There are also similar projects available from Web of Things community. 
