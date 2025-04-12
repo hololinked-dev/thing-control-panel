@@ -13,11 +13,10 @@ The GUI is only coming up, its still rough on the edges. If anything is not upto
 
 [Visit Here](https://control-panel.hololinked.dev) for predeployed website with SSL. <br>
 [Visit Here](http://no-ssl-control-panel.hololinked.net) for predeployed website without SSL. <br> <br>
-![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fcontrol-panel.hololinked.dev&label=SSL%20Website)
-![Website Status](https://img.shields.io/website?url=http%3A%2F%2Fno-ssl-control-panel.hololinked.net&label=Non%20SSL%20Website) <br>
-<br>
 Based on your server SSL support, you can choose the appropriate link.
 
+![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fcontrol-panel.hololinked.dev&label=SSL%20Website)
+![Website Status](https://img.shields.io/website?url=http%3A%2F%2Fno-ssl-control-panel.hololinked.net&label=Non%20SSL%20Website) <br>
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/hololinked-dev/thing-control-panel/docker-publish.yml?label=Build%20Docker%20Image)
 
 ### Installation
@@ -45,13 +44,13 @@ This application is written in plain React and therefore CSR. It is intended to 
 Insert the address of the device or the endpoint of the thing description, then press load. If you are using your own Thing server runtime or a standard location to store
 your thing descriptions, click on settings (cog-wheel on top left) and edit "default endpoint for fetching thing description" to suit
 your requirements. The address enetered in the address bar will then be considered as base URL and the default endpoint will be appended.
-Store your addresses in the browser using the store icon on the top right so that you dont have to type the address everytime - this storage is browser specific.  
 
-If you are using `hololinked` as the server, the default endpoint must be one of `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and
-enter the Thing addresss as `http(s)://{address of host}/{instance name of the thing}`.
+If you are using `hololinked` as the server, the default endpoint can be one of `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and you can enter the Thing addresss as `http(s)://{address of host}/{instance name of the thing}`.
 
 If self signed HTTP(s) certificate is used, you might have to give permission to the browser. You can open the endpoint in new tab using the new tab button on top right. 
 This should fetch the thing description without fail. Sometimes, the permission given for self signed certificate given may not match the form (TD form field) entries, so please do make sure you can atleast fetch/read one property from a browser tab if the GUI is still not working.  
+
+If you are using one of the pre-hosted websites, make sure your server sets a CORS header as the domain will not match and cross domain resource sharing needs to be enabled. There are currently no cookies and credentials moving around in the website, so its completely safe. 
 
 After you load, your defined properties, actions and events are shown. You can freely interact with them as shown below:
 
@@ -93,8 +92,10 @@ This file contains certain configurations that can be modified according to your
 
 Contributors welcome. 
 
-A Scrum workflow is followed for development. You can take a issue, we will assign a timeline/sprint and review it once the sprint is over. Of course, as an individual contributor there is no need to follow this as its all free work, but it will help us to keep track of the issues and features.
+A Scrum workflow is followed for development. You can take a issue, we will assign a timeline/sprint and review it once the sprint is over. Of course, as an individual contributor there is no need to follow this or understand what is SCRUM etc. as its all free work, but it will help us to keep track of the issues and features.
 
-Meeting date: once every month, started in April 2025, see details [in organization info](https://github.com/hololinked-dev/#monthly-meetings). 
+[Project Planning](https://github.com/orgs/hololinked-dev/projects/7)
+
+Meeting date: first wednesday every month, started in April 2025, see details [in organization info](https://github.com/hololinked-dev/#monthly-meetings). 
 
 Feel free to also propose new ideas or add more WoT ops. There are also similar projects available from Web of Things community. 
