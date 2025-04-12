@@ -4,6 +4,8 @@ Admin control panel in React for Things having a standard WoT Thing Description 
 implemented with [`hololinked`](https://github.com/VigneshVSV/hololinked). Suitable for development of server backend, 
 test properties, actions and events or generic use purposes to interact with the Thing. 
 
+Based on Eclipse Thingweb.  
+
 The GUI is only coming up, its still rough on the edges. If anything is not upto your standard or buggy/broken,
  please do feel free to reach me, open a discussion in the discussions tab or an issue, or contribute to an existing issue. 
 <br>
@@ -93,6 +95,6 @@ Contributors welcome.
 
 A Scrum workflow is followed for development. You can take a issue, we will assign a timeline/sprint and review it once the sprint is over. Of course, as an individual contributor there is no need to follow this as its all free work, but it will help us to keep track of the issues and features.
 
-Meeting date: TBD, once every month, to be started in April 2025. 
+Meeting date: once every month, started in April 2025, see details [in organization info](https://github.com/hololinked-dev/#monthly-meetings). 
 
 Feel free to also propose new ideas or add more WoT ops. There are also similar projects available from Web of Things community. 
