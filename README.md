@@ -34,7 +34,7 @@ This application is written in plain React and therefore CSR. It is intended to 
 
 | Device | **SSL** | **Non-SSL** |
 |--------|---------|-------------|
-| Oscilloscope Simulator | [Link](https://control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td) | [Link](http://no-ssl-control-panel.hololinked.net/#http://examples.hololinked.net/simulations/spectrometer/resources/wot-td) |
+| Oscilloscope Simulator | [Link](https://control-panel.hololinked.dev/#https://examples.hololinked.dev/simulations/oscilloscope/resources/wot-td) | [Link](http://no-ssl-control-panel.hololinked.net/#http://examples.hololinked.net/simulations/oscilloscope/resources/wot-td) |
 | Data Schema Thing | [Link](https://control-panel.hololinked.dev/#https://external-examples.hololinked.dev/data-schema-thing) | [Link](http://no-ssl-control-panel.hololinked.net/#http://external-examples.hololinked.net/data-schema-thing) |
 | Advanced Coffee Machine | [Link](https://control-panel.hololinked.dev/https://external-examples.hololinked.dev/advanced-coffee-machine) | [Link](http://no-ssl-control-panel.hololinked.net/#http://external-examples.hololinked.net/advanced-coffee-machine) |
 | Spectrometer Simulator | [Link](https://control-panel.hololinked.dev/https://examples.hololinked.dev/simulations/spectrometer/resources/wot-td) | [Link](http://no-ssl-control-panel.hololinked.net/#http://examples.hololinked.net/simulations/spectrometer/resources/wot-td) |
