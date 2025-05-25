@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest",
     "preview": "vite preview",
     "clean": "rmdir dist /s /q",
     "uninstall-node-modules": "rmdir node_modules /s /q",
@@ -52,6 +53,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
-    "vite-plugin-mkcert": "^1.17.3"
+    "vite-plugin-mkcert": "^1.17.3",
+    "vitest": "^1.0.0"
   }
 }
