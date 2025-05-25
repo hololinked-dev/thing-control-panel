@@ -43,9 +43,9 @@ This application is written in plain React and therefore CSR. It is intended to 
 
 Insert the address of the device or the endpoint of the thing description, then press load. If you are using your own Thing server runtime or a standard location to store
 your thing descriptions, click on settings (cog-wheel on top left) and edit "default endpoint for fetching thing description" to suit
-your requirements. The address enetered in the address bar will then be considered as base URL and the default endpoint will be appended.
+your requirements. The address entered in the address bar will then be considered as base URL and the default endpoint will be appended.
 
-If you are using `hololinked` as the server, the default endpoint can be one of `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and you can enter the Thing addresss as `http(s)://{address of host}/{instance name of the thing}`.
+If you are using `hololinked` as the server, the default endpoint can be one of `/resources/wot-td` or `/resources/wot-td?ignore_errors=true`, and you can enter the Thing address as `http(s)://{address of host}/{instance name of the thing}`.
 
 If self signed HTTP(s) certificate is used, you might have to give permission to the browser. You can open the endpoint in new tab using the new tab button on top right. 
 This should fetch the thing description without fail. Sometimes, the permission given for self signed certificate given may not match the form (TD form field) entries, so please do make sure you can atleast fetch/read one property from a browser tab if the GUI is still not working.  
