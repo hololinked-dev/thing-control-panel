@@ -12,6 +12,7 @@ import { ThingClient } from './builtins/client/index';
 import React, { createContext, useContext, useState } from "react";
 import { AppSettingsType, defaultAppSettings } from "./builtins/app-settings";
 import { useLocalStorage } from "./builtins/hooks";
+import { DragAndDropState } from "./builtins/drag-and-drop";
 
 
 
