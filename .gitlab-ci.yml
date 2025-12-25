@@ -1,0 +1,9 @@
+stages:
+  - build
+
+build-app:
+  stage: build
+  image: gcr.io/k8s-skaffold/skaffold:v2.17.0
+  script:
+    - docker build -f Dockerfile .
+  when: always
