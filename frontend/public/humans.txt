@@ -1,11 +1,14 @@
 /* TEAM */
 	Developer & Maintainer: Vignesh Venkatasubramanian Vaidyanathan
-	Contact: vignesh.vaidyanathan [at] hololinked.dev
+	Contact: info [at] hololinked.dev
 	LinkedIn: https://www.linkedin.com/in/v-vignesh-venkata-subramanian-7a53a3108/
-	From:Chennai, India
+	From: Chennai, India
+
+	Developer: Aditya Ranjan
+	GitHub: https://github.com/adityar947
 
 /* SITE */
-    Last update: 2024/12/16
+    Last update: 2025/12/30
 	Language: English
 	Doctype: HTML5
 	IDE: VS Code
@@ -14,5 +17,5 @@
     Thanks to all our contributors and supporters.
 
 /* CONTACT */
-    Email: vignesh.vaidyanathan@hololinked.dev
+    Email: info@hololinked.dev
  
