@@ -1,0 +1,54 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: frontend
+build:
+  artifacts:
+    - image: frontend
+      context: .
+      docker:
+        dockerfile: Dockerfile
+        target: dev
+      sync:
+        manual:
+          - src: "frontend/**/*"
+            dest: .
+  tagPolicy:
+    envTemplate:
+      template: {{ or .VERSION .NAMESPACE }}
+  local:
+    push: true
+deploy:
+  helm:
+    releases:
+      - name: frontend
+        chartPath: deployment/helm/frontend
+        namespace: {{ or .NAMESPACE "default" }}
+        createNamespace: true
+        setValues:
+          nameOverride: frontend
+          image.ports.containerPort: 5000
+        setValueTemplates:
+          image.repository: "{{ .IMAGE_REPO_frontend }}"
+          image.tag: "{{ .IMAGE_TAG_frontend }}@{{ .IMAGE_DIGEST_frontend }}"
+profiles:
+  - name: prod
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: prod
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: ingress
+deploy:
+  helm:
+    releases:
+      - name: ingress
+        chartPath: deployment/helm/ingress
+        namespace: {{ or .NAMESPACE "default" }}
+        valuesFiles:
+          - deployment/helm/ingress/values.yaml
+        setValues:
+          nameOverride: ingress

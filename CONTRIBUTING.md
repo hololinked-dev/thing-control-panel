@@ -14,14 +14,15 @@ All types of contributions are encouraged and valued.
 
 ## I Have a Question
 
-Do feel free to reach out to me at vignesh.vaidyanathan@hololinked.dev. This project is only upcoming, so inquries are dealt case to case.
-There can significant improvements made, so feel free to propose ideas. They can be solidified and integrated.
+Do feel free to reach out to me at info@hololinked.dev. This project is only upcoming, so inquries are dealt case to case. There can significant improvements made, so feel free to propose ideas. They can be solidified and integrated.
 
 ## I wish to contribute to issues
 
 Find an issue you like and comment on it (good first issue or not), I can assign it to you.
 
 Please bear in mind that if you are using AI heavily, reviews get harder. So kindly make sure yourself that it is a good code base that you would integrate into your own production project, whether AI generated or not.
+
+Low effort PRs will be rejected.
 
 ## Attribution
 
