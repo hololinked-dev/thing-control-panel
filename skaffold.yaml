@@ -15,7 +15,7 @@ build:
             dest: .
   tagPolicy:
     envTemplate:
-      template: {{ or .VERSION .NAMESPACE }}
+      template: "{{ or .VERSION .NAMESPACE }}"
   local:
     push: true
 deploy:
@@ -23,7 +23,7 @@ deploy:
     releases:
       - name: frontend
         chartPath: deployment/helm/frontend
-        namespace: {{ or .NAMESPACE "default" }}
+        namespace: "{{ or .NAMESPACE default }}"
         createNamespace: true
         setValues:
           nameOverride: frontend
@@ -41,13 +41,41 @@ profiles:
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
+  name: backend
+build:
+  artifacts:
+    - image: backend
+      context: .
+      docker:
+        dockerfile: backend/Dockerfile
+        target: dev
+      sync:
+        manual:
+          - src: "backend/**/*"
+            dest: .
+  tagPolicy:
+    envTemplate:
+      template: "{{ or .VERSION .NAMESPACE }}"
+  local:
+    push: true
+profiles:
+  - name: prod
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: prod
+
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
   name: ingress
 deploy:
   helm:
     releases:
       - name: ingress
         chartPath: deployment/helm/ingress
-        namespace: {{ or .NAMESPACE "default" }}
+        namespace: "{{ or .NAMESPACE default }}"
         valuesFiles:
           - deployment/helm/ingress/values.yaml
         setValues:
