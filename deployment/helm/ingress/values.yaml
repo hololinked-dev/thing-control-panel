@@ -1,0 +1,9 @@
+nameOverride: ""
+fullnameOverride: ""
+
+enabled: true
+environment: test
+className: nginx
+
+annotations:
+  cert-manager.io/cluster-issuer: letsencrypt-test
