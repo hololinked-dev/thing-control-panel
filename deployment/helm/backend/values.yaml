@@ -5,7 +5,7 @@ image:
   pullPolicy: Always
   tag: "latest"
   ports:
-    containerPort: 80
+    containerPort: 5000
 
 nameOverride: ""
 fullnameOverride: ""
