@@ -17,6 +17,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.get("/healthz", tags=["Health"])
+def health_check():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 

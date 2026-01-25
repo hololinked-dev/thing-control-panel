@@ -1,7 +1,7 @@
 FROM node:22 AS base
 
 WORKDIR /app/frontend
-COPY frontend/package*.json /app/frontend
+COPY frontend/package*.json /app/frontend/
 RUN npm install . --force
 
 COPY frontend /app/frontend
