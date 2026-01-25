@@ -19,4 +19,3 @@ RUN uv venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 
 RUN rm -rf /var/lib/apt/lists/*
-

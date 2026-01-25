@@ -41,5 +41,4 @@ RUN curl -fsSL "https://storage.googleapis.com/skaffold/releases/${SKAFFOLD_VERS
     chmod +x /usr/local/bin/skaffold && \
     skaffold version
 
-RUN rm -rf /var/lib/apt/lists/* 
-
+RUN rm -rf /var/lib/apt/lists/*

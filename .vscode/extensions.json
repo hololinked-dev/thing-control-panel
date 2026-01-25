@@ -6,5 +6,6 @@
         "hashicorp.terraform",
         "ms-kubernetes-tools.vscode-kubenetes-tools",
         "42crunch.vscode-openapi",
+        "exiasr.hadolint"
     ]
 }
