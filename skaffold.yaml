@@ -7,12 +7,12 @@ build:
     - image: frontend
       context: .
       docker:
-        dockerfile: Dockerfile
+        dockerfile: frontend/Dockerfile
         target: dev
       sync:
         manual:
-          - src: "frontend/**/*"
-            dest: .
+          - src: "frontend/src/**/*"
+            dest: /app
   tagPolicy:
     envTemplate:
       template: "{{ or .VERSION .NAMESPACE }}"
@@ -27,7 +27,7 @@ deploy:
         createNamespace: true
         setValues:
           nameOverride: frontend
-          image.ports.containerPort: 5000
+          image.ports.containerPort: 5173
         setValueTemplates:
           image.repository: "{{ .IMAGE_REPO_frontend }}"
           image.tag: "{{ .IMAGE_TAG_frontend }}@{{ .IMAGE_DIGEST_frontend }}"
@@ -37,6 +37,17 @@ profiles:
       - op: replace
         path: /build/artifacts/0/docker/target
         value: prod
+      - op: replace
+        path: /deploy/helm/releases/0/setValues/image.ports.containerPort
+        value: 80
+  - name: staging
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: staging
+      - op: replace
+        path: /deploy/helm/releases/0/setValues/image.ports.containerPort
+        value: 80
 ---
 apiVersion: skaffold/v4beta13
 kind: Config
@@ -51,20 +62,37 @@ build:
         target: dev
       sync:
         manual:
-          - src: "backend/**/*"
-            dest: .
+          - src: "backend/src/**/*"
+            dest: /app
   tagPolicy:
     envTemplate:
       template: "{{ or .VERSION .NAMESPACE }}"
   local:
     push: true
+deploy:
+  helm:
+    releases:
+      - name: backend
+        chartPath: deployment/helm/backend
+        namespace: "{{ or .NAMESPACE default }}"
+        createNamespace: true
+        setValues:
+          nameOverride: backend
+          image.ports.containerPort: 5000
+        setValueTemplates:
+          image.repository: "{{ .IMAGE_REPO_backend }}"
+          image.tag: "{{ .IMAGE_TAG_backend }}@{{ .IMAGE_DIGEST_backend }}"
 profiles:
   - name: prod
     patches:
       - op: replace
         path: /build/artifacts/0/docker/target
         value: prod
-
+  - name: staging
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: staging
 ---
 apiVersion: skaffold/v4beta13
 kind: Config

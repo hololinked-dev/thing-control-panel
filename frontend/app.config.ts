@@ -1,3 +1,3 @@
 export const appConfig = {
-    useSSL : true,
-}
+	useSSL: false,
+};
