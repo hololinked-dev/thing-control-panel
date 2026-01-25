@@ -10,7 +10,7 @@ workflow:
       variables:
         DEPLOYMENT_ENV: prod
         KUBECONFIG_BASE64: $KUBECONFIG_B64
-    - if: $CI_COMMIT_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOYMENT_ENV: staging
         KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
@@ -26,6 +26,8 @@ stages:
   - test
   - build
   - deploy
+  - rollback
+  - undeploy
 
 ops-job-runner:build:
   stage: prepare
@@ -88,10 +90,10 @@ frontend:build:
 .deploy.template:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
-  variables:
-    MODULE: ""
   when: manual
   allow_failure: true
+  variables:
+    MODULE: ""
   before_script:
     - |
       cat <<EOF >> skaffold.env
@@ -116,5 +118,59 @@ frontend:deploy:
     - frontend:build
   dependencies:
     - frontend:build
+  variables:
+    MODULE: frontend
+
+############
+# Rollback #
+############
+
+.rollback.template:
+  stage: rollback
+  image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+  when: manual
+  allow_failure: true
+  variables:
+    RELEASE_NAME: ""
+  before_script:
+    - |
+      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+      export KUBECONFIG="$PWD/kubeconfig.yaml"
+  script:
+    - helm rollback $RELEASE_NAME -n $DEPLOYMENT_ENV
+
+frontend:rollback:
+  extends: .rollback.template
+  needs:
+    - frontend:deploy
+  variables:
+    RELEASE_NAME: frontend
+
+############
+# Undeploy #
+############
+
+.undeploy:template:
+  stage: undeploy
+  image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+  when: manual
+  allow_failure: true
+  variables:
+    MODULE: ""
+  before_script:
+    - |
+      cat <<EOF >> skaffold.env
+      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
+      VERSION=$VERSION
+      NAMESPACE=$DEPLOYMENT_ENV
+      EOF
+    - |
+      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+      export KUBECONFIG="$PWD/kubeconfig.yaml"
+  script:
+    - skaffold delete -m $MODULE -p $DEPLOYMENT_ENV
+
+frontend:undeploy:
+  extends: .undeploy:template
   variables:
     MODULE: frontend
