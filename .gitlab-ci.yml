@@ -1,0 +1,120 @@
+variables:
+  VERSION: v0.0.1dev
+
+default:
+  interruptible: true
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables:
+        DEPLOYMENT_ENV: prod
+        KUBECONFIG_BASE64: $KUBECONFIG_B64
+    - if: $CI_COMMIT_DEFAULT_BRANCH
+      variables:
+        DEPLOYMENT_ENV: staging
+        KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
+    - if: $CI_COMMIT_BRANCH
+      variables:
+        DEPLOYMENT_ENV: dev
+        KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
+
+stages:
+  - prepare
+  - codestyle
+  - security
+  - test
+  - build
+  - deploy
+
+ops-job-runner:build:
+  stage: prepare
+  image: docker:latest
+  needs: []
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID -f deployment/ci-cd/ops.job-runner.Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+
+dev-job-runner:build:
+  stage: prepare
+  image: docker:latest
+  needs: []
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID -f deployment/ci-cd/dev.job-runner.Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+
+#########
+# Build #
+#########
+
+.build.template:
+  stage: build
+  image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+  variables:
+    MODULE: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - |
+      cat <<EOF >> skaffold.env
+      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
+      VERSION=$VERSION
+      NAMESPACE=$DEPLOYMENT_ENV
+      EOF
+    - |
+      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+      export KUBECONFIG="$PWD/kubeconfig.yaml"
+  script:
+    - skaffold build --file-output skaffold-deploy-$MODULE.json -p $DEPLOYMENT_ENV -m $MODULE
+  artifacts:
+    paths:
+      - skaffold-deploy-*.json
+    expire_in: 3 days
+
+frontend:build:
+  extends: .build.template
+  variables:
+    MODULE: frontend
+
+##########
+# Deploy #
+##########
+
+.deploy.template:
+  stage: deploy
+  image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+  variables:
+    MODULE: ""
+  when: manual
+  allow_failure: true
+  before_script:
+    - |
+      cat <<EOF >> skaffold.env
+      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
+      VERSION=$VERSION
+      NAMESPACE=$DEPLOYMENT_ENV
+      EOF
+    - |
+      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+      export KUBECONFIG="$PWD/kubeconfig.yaml"
+  script:
+    - |
+      if [ -f "skaffold-deploy-$MODULE.json" ]; then
+        skaffold deploy -a skaffold-deploy-$MODULE.json -m $MODULE -p $DEPLOYMENT_ENV
+      else
+        skaffold deploy -m $MODULE -p $DEPLOYMENT_ENV
+      fi
+
+frontend:deploy:
+  extends: .deploy.template
+  needs:
+    - frontend:build
+  dependencies:
+    - frontend:build
+  variables:
+    MODULE: frontend
