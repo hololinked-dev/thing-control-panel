@@ -48,6 +48,7 @@ profiles:
       - op: replace
         path: /deploy/helm/releases/0/setValues/image.ports.containerPort
         value: 80
+  - name: dev
 ---
 apiVersion: skaffold/v4beta13
 kind: Config
@@ -93,6 +94,7 @@ profiles:
       - op: replace
         path: /build/artifacts/0/docker/target
         value: staging
+  - name: dev
 ---
 apiVersion: skaffold/v4beta13
 kind: Config
