@@ -9,14 +9,17 @@ workflow:
     - if: $CI_COMMIT_TAG
       variables:
         DEPLOYMENT_ENV: prod
+        NAMESPACE: prod
         KUBECONFIG_BASE64: $KUBECONFIG_B64
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOYMENT_ENV: staging
+        NAMESPACE: staging
         KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
     - if: $CI_COMMIT_BRANCH
       variables:
         DEPLOYMENT_ENV: dev
+        NAMESPACE: $CI_COMMIT_REF_SLUG
         KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
 
 stages:
@@ -66,7 +69,7 @@ dev-job-runner:build:
       cat <<EOF >> skaffold.env
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
-      NAMESPACE=$DEPLOYMENT_ENV
+      NAMESPACE=$NAMESPACE
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -82,6 +85,11 @@ frontend:build:
   extends: .build.template
   variables:
     MODULE: frontend
+
+backend:build:
+  extends: .build.template
+  variables:
+    MODULE: backend
 
 ##########
 # Deploy #
@@ -99,7 +107,7 @@ frontend:build:
       cat <<EOF >> skaffold.env
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
-      NAMESPACE=$DEPLOYMENT_ENV
+      NAMESPACE=$NAMESPACE
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -112,6 +120,11 @@ frontend:build:
         skaffold deploy -m $MODULE -p $DEPLOYMENT_ENV
       fi
 
+namespace:deploy:
+  extends: .deploy.template
+  script:
+    - kubectl create namespace $NAMESPACE || echo "Namespace $NAMESPACE already exists"
+
 frontend:deploy:
   extends: .deploy.template
   needs:
@@ -120,6 +133,15 @@ frontend:deploy:
     - frontend:build
   variables:
     MODULE: frontend
+
+backend:deploy:
+  extends: .deploy.template
+  needs:
+    - backend:build
+  dependencies:
+    - backend:build
+  variables:
+    MODULE: backend
 
 ############
 # Rollback #
@@ -137,7 +159,7 @@ frontend:deploy:
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
       export KUBECONFIG="$PWD/kubeconfig.yaml"
   script:
-    - helm rollback $RELEASE_NAME -n $DEPLOYMENT_ENV
+    - helm rollback $RELEASE_NAME -n $NAMESPACE
 
 frontend:rollback:
   extends: .rollback.template
@@ -145,6 +167,13 @@ frontend:rollback:
     - frontend:deploy
   variables:
     RELEASE_NAME: frontend
+
+backend:rollback:
+  extends: .rollback.template
+  needs:
+    - backend:deploy
+  variables:
+    RELEASE_NAME: backend
 
 ############
 # Undeploy #
@@ -162,7 +191,7 @@ frontend:rollback:
       cat <<EOF >> skaffold.env
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
-      NAMESPACE=$DEPLOYMENT_ENV
+      NAMESPACE=$NAMESPACE
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -170,7 +199,20 @@ frontend:rollback:
   script:
     - skaffold delete -m $MODULE -p $DEPLOYMENT_ENV
 
+namespace:undeploy:
+  extends: .undeploy:template
+  script:
+    - skaffold delete -m frontend -p $DEPLOYMENT_ENV
+    - skaffold delete -m backend -p $DEPLOYMENT_ENV
+    - kubectl delete all --all -n $NAMESPACE
+    - kubectl delete namespace $NAMESPACE
+
 frontend:undeploy:
   extends: .undeploy:template
   variables:
     MODULE: frontend
+
+backend:undeploy:
+  extends: .undeploy:template
+  variables:
+    MODULE: backend
