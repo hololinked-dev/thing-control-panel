@@ -6,6 +6,7 @@
         "hashicorp.terraform",
         "ms-kubernetes-tools.vscode-kubenetes-tools",
         "42crunch.vscode-openapi",
-        "exiasr.hadolint"
+        "exiasr.hadolint",
+        "Tim-Koehler.helm-intellisense"
     ]
 }
