@@ -1,0 +1,150 @@
+site_name: thing control panel
+site_url: https://docs.hololinked.io
+repo_url: https://gitlab.com/hololinked/thing-control-panel
+repo_name: thing-control-panel
+edit_uri: https://gitlab.com/hololinked/thing-control-panel/-/edit/main/documentation/
+
+nav:
+  - Home:
+      - Introduction: index.md
+
+theme:
+  name: material
+  custom_dir: overrides
+
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: yellow
+      accent: orange
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+      primary: brown
+      accent: orange
+
+  icon:
+    repo: fontawesome/brands/github
+
+  features:
+    # editing the page
+    - content.action.edit
+    - content.action.view
+    # search
+    - search.suggest
+    - search.highlight
+    - search.share
+    # code
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    # headers
+    - announce.dismiss
+    # footer
+    - navigation.footer
+    # navigation
+    - navigation.tabs
+    - navigation.path
+    - navigation.prune
+    - navigation.tracking
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.top
+
+  font:
+    text: IBM Plex Sans
+    heading: Lexend
+    code: Roboto Mono
+    # Other useful fonts that we may use:
+    # Lexend Deca, Recursive, Inter, Fira Sans, IBM Plex Sans,
+    # Google Sans Code (Used for titles and headers), Funnel Sans, Comme
+
+plugins:
+  # - git-revision-date-localized:
+  #     enable_creation_date: true
+  #     fallback_to_build_date: true
+  # - git-authors
+  - search
+  - macros
+  - autorefs:
+      resolve_closest: true
+  # - blog
+  # - social
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            # code base and inheritance
+            allow_inspection: true
+            show_bases: true
+            show_inheritance_diagram: true
+            # headings
+            show_root_heading: true
+            parameter_headings: true
+            heading_level: 1
+            show_category_heading: true
+            # docstrings style
+            docstring_style: numpy
+            group_by_category: true
+            # annotations
+            modernize_annotations: true
+            show_signature_annotations: true
+            separate_signature: true
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - toc:
+      toc_depth: 3
+
+extra:
+  social:
+    - icon: fontawesome/brands/discord
+      link: https://discord.com/invite/kEz87zqQXh
+      name: discord group
+    - icon: fontawesome/solid/envelope
+      link: mailto:info@hololinked.dev?subject=Inquiry/Feedback%20about%20hololinked"
+      name: email
+    - icon: fontawesome/solid/globe
+      link: https://hololinked.dev/
+      name: project website containing non-documentation resources
+    - icon: fontawesome/solid/circle-dollar-to-slot
+      link: https://github.com/sponsors/VigneshVSV
+      name: sponsor
+
+copyright: >
+  © BSD-3-Clause license, hololinked contributors <br/>
+  This website uses privacy friendly anonymized GDPR compliant cookie-less analytics.
+
+extra_css:
+  - stylesheets/extra.css
+  - https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap
+  - https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js

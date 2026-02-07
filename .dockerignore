@@ -29,3 +29,6 @@
 **/.mypy_cache/
 **/.ruff_cache/
 **/.venv/
+**/site
+**/logs
+**/*.env

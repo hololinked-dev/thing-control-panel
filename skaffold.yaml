@@ -96,6 +96,59 @@ profiles:
         value: staging
   - name: dev
 ---
+# development version of the Python docs
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: documentation
+build:
+  artifacts:
+    - image: thing_control_panel_docs
+      context: .
+      docker:
+        dockerfile: documentation/Dockerfile
+        target: dev
+      # mkdocs reloading not working
+      sync:
+        manual:
+          - src: "documentation/docs/**/*"
+            dest: "/app"
+          - src: "documentation/mkdocs.yml"
+            dest: "/app"
+          - src: "documentation/main.py"
+            dest: "/app"
+  tagPolicy:
+    envTemplate:
+      template: dev
+  local:
+    push: true
+deploy:
+  helm:
+    releases:
+      - name: documentation
+        chartPath: deployment/helm/documentation
+        namespace: "{{ or .NAMESPACE default }}"
+        createNamespace: true
+        setValues:
+          nameOverride: documentation
+          image.ports.containerPort: 8000
+        setValueTemplates:
+          image:
+            repository: "{{ .IMAGE_REPO_thing_control_panel_docs }}"
+            tag: "{{ .IMAGE_TAG_thing_control_panel_docs }}@{{ .IMAGE_DIGEST_thing_control_panel_docs }}"
+profiles:
+  - name: prod
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: prod
+  - name: staging
+    patches:
+      - op: replace
+        path: /build/artifacts/0/docker/target
+        value: staging
+  - name: dev
+---
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:

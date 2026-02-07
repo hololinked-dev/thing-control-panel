@@ -91,6 +91,11 @@ backend:build:
   variables:
     MODULE: backend
 
+documentation:build:
+  extends: .build.template
+  variables:
+    MODULE: documentation
+
 ##########
 # Deploy #
 ##########
@@ -143,6 +148,15 @@ backend:deploy:
   variables:
     MODULE: backend
 
+documentation:deploy:
+  extends: .deploy.template
+  needs:
+    - documentation:build
+  dependencies:
+    - documentation:build
+  variables:
+    MODULE: documentation
+
 ############
 # Rollback #
 ############
@@ -174,6 +188,13 @@ backend:rollback:
     - backend:deploy
   variables:
     RELEASE_NAME: backend
+
+documentation:rollback:
+  extends: .rollback.template
+  needs:
+    - documentation:deploy
+  variables:
+    RELEASE_NAME: documentation
 
 ############
 # Undeploy #
@@ -216,3 +237,8 @@ backend:undeploy:
   extends: .undeploy:template
   variables:
     MODULE: backend
+
+documentation:undeploy:
+  extends: .undeploy:template
+  variables:
+    MODULE: documentation
