@@ -12,6 +12,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
 
 RUN npm install -g semantic-release @semantic-release/exec
 
+RUN npm install -g prettier@3.8.1
+
 RUN curl -LsSf https://github.com/astral-sh/uv/releases/download/0.9.0/uv-installer.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
 

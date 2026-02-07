@@ -54,6 +54,14 @@ dev-job-runner:build:
     - docker build -t $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID -f deployment/ci-cd/dev.job-runner.Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
 
+###########
+# Imports #
+###########
+
+include:
+  - local: frontend/.gitlab-ci.yml
+  - local: backend/.gitlab-ci.yml
+
 #########
 # Build #
 #########
