@@ -1,0 +1,129 @@
+
+/* main reading area */
+.md-content {
+    text-align: justify;
+}
+
+.md-main[data-md-color-scheme="light"] {
+    background-color: antiquewhite;
+}
+
+.md-main[data-md-color-scheme="dark"] {
+    background-color: #1e1e1e;
+}
+
+.hidden-heading {
+    display: none;
+}
+
+@media (min-width: 1920px) {
+  .md-content {
+    min-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (min-width: 76.25em) and (max-width: 120rem)  {
+  .md-sidebar--primary {
+    margin-left: 0 !important;  /* Removes the extra gap */
+  }
+
+  .md-sidebar {
+    padding-left: 0 !important;
+  }
+
+  .md-main__inner {
+    margin-left: 0 !important;  
+    max-width: 100% !important; /* Allow content to expand */
+  }
+}
+
+
+
+/* adds borders to either side of the reading area */
+.md-content {
+    position: relative;
+}
+
+.md-content::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0.5px;
+    background: #e4e4e4;
+    z-index: 1;
+}
+
+.md-content::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: -5px;
+    width: 0.5px;
+    background: #e4e4e4;
+    z-index: 1;
+}
+
+@media (max-width: 959px) {
+    .md-content::before,
+    .md-content::after {
+        display: none;
+    }
+}
+
+/* change heading font to something we like (just the heading) */
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans+Code:wght@600;700&display=swap");
+
+:root {
+  --heading-font: "Google Sans Code", ui-monospace, SFMono-Regular, Menlo,
+                  Consolas, "Liberation Mono", monospace;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  font-family: var(--heading-font);
+  font-weight: 700;      /* or 600 if you prefer */
+  letter-spacing: 0;     /* adjust if your font feels tight/wide */
+}
+
+
+/* Apply same font to the top-left brand title (site/repo name) */
+.md-header__brand .md-ellipsis,
+.md-header__title,
+.md-header__topic,
+[data-md-component="header-title"] {
+  font-family: var(--heading-font);
+  font-weight: 700;   /* tweak to 600/500 if too heavy */
+  letter-spacing: 0;  /* adjust if needed */
+}
+
+
+/* Apply same font to LEFT SIDEBAR (primary navigation) */
+.md-sidebar--primary nav.md-nav .md-nav__item {
+  font-family: Delius;
+  font-size: 20px;
+  font-weight: 700;
+} /* not working as intended */
+
+.md-sidebar--primary .md-nav__link {
+    font-family: var(--heading-font);
+    font-size: 16.8px;
+    font-weight: 600;
+}
+
+/* Apply same font to RIGHT SIDEBAR (page table of contents) */
+.md-sidebar--secondary [data-md-component="toc"] .md-nav__title,
+.md-sidebar--secondary [data-md-component="toc"] .md-nav__link {
+  font-family: var(--heading-font);
+  font-weight: 500;
+}
+
+/* Optional polish */
+.md-nav__link--active { font-weight: 700; }  /* make current item pop */
+.md-nav__link code { font-family: inherit; } /* keep code fragments consistent in TOCs */

@@ -1,0 +1,62 @@
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/hololinked/thing-control-panel/documentation
+  pullPolicy: Always
+  tag: "latest"
+  ports:
+    containerPort: 8000
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {} 
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# livenessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+# readinessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env: {}
