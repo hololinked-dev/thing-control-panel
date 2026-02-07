@@ -1,0 +1,6 @@
+backend:codestyle:
+  stage: codestyle
+  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  script:
+    - cd backend
+    - uvx ruff check backend
