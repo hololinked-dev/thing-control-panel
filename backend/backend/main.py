@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print("Starting up...")
     yield
     print("Shutting down...")
@@ -19,7 +20,7 @@ app = FastAPI(
 
 
 @app.get("/healthz", tags=["Health"])
-def health_check():
+def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 

@@ -4,3 +4,8 @@ frontend:codestyle:
   script:
     - cd frontend
     - npx prettier --check "src/**/*"
+
+frontend:gitleaks:
+  extends: .security:gitleaks:template
+  variables:
+    MODULE_PATH: "frontend/src"

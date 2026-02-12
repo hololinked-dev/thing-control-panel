@@ -1,0 +1,4 @@
+helm:gitleaks:
+  extends: .security:gitleaks:template
+  variables:
+    MODULE_PATH: "deployment/helm"

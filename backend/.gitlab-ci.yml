@@ -1,6 +1,31 @@
 backend:codestyle:
-  stage: codestyle
-  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  extends: .codestyle:template
   script:
     - cd backend
     - uvx ruff check backend
+
+backend:mypy:
+  extends: .codestyle:template
+  script:
+    - cd backend
+    - python -m mypy backend
+
+backend:bandit:
+  extends: .security:template
+  script:
+    - cd backend
+    - echo "Running bandit security scan..."
+    - python3 -m bandit -c pyproject.toml -r backend -b .bandit-baseline.json -f json -o bandit-report.json
+    - echo "rerunning to display NEW issues in logs"
+    - python3 -m bandit -c pyproject.toml -r backend -b .bandit-baseline.json
+    - echo "rerunning to display EXISTING issues in logs"
+    - python3 -m bandit -c pyproject.toml -r backend || true
+  artifacts:
+    paths:
+      - backend/bandit-report.json
+    expire_in: 30 days
+
+backend:gitleaks:
+  extends: .security:gitleaks:template
+  variables:
+    MODULE_PATH: "backend/backend"
