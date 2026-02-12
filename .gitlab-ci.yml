@@ -40,7 +40,7 @@ ops-job-runner:build:
     DOCKER_HOST: unix:///var/run/docker.sock
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID -f deployment/ci-cd/ops.job-runner.Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID -f ci-cd/ops.job-runner.Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
 
 dev-job-runner:build:
@@ -51,8 +51,57 @@ dev-job-runner:build:
     DOCKER_HOST: unix:///var/run/docker.sock
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID -f deployment/ci-cd/dev.job-runner.Dockerfile .
+    - docker build -t $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID -f ci-cd/dev.job-runner.Dockerfile .
     - docker push $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+
+#############
+# codestyle #
+#############
+
+.codestyle:template:
+  stage: codestyle
+  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: always
+  needs:
+    - dev-job-runner:build
+  script:
+    - echo "base codestyle job template"
+
+############
+# security #
+############
+
+.security:template:
+  stage: security
+  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: always
+  needs:
+    - dev-job-runner:build
+  script:
+    - echo "base security job template"
+
+.security:gitleaks:template:
+  extends: .security:template
+  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: always
+  variables:
+    MODULE_PATH: ""
+  script:
+    - echo "Running gitleaks secret scan..."
+    - gitleaks detect --source $MODULE_PATH --no-git --report-path gitleaks-report.json --verbose --log-level trace
+  artifacts:
+    paths:
+      - gitleaks-report.json
+    expire_in: 30 days
 
 ###########
 # Imports #
@@ -61,6 +110,7 @@ dev-job-runner:build:
 include:
   - local: frontend/.gitlab-ci.yml
   - local: backend/.gitlab-ci.yml
+  - local: deployment/.gitlab-ci.yml
 
 #########
 # Build #

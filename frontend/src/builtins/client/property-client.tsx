@@ -279,6 +279,7 @@ function stringify(val, depth, replacer, space) {
 							// @ts-ignore
 							return ((a = Array.isArray(v)), (val = v));
 						!o && (o = a ? [] : {});
+						// @ts-ignore
 						o[k] = _build(k, v, a ? depth : depth - 1);
 					}
 				}),

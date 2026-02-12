@@ -28,6 +28,7 @@ dev = [
     "ruff>=0.12.10",
     "pre-commit>=4.5.0",
     "debugpy>=1.8.19",
+    "mypy>=1.19.1",
 ]
 test = [
     "requests==2.32.3",
@@ -39,7 +40,7 @@ test = [
 ]
 scanning = [
     "bandit>=1.9.1",
-]   
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -87,5 +88,13 @@ exclude_dirs = [
     "examples", 
     "licenses",
     "tests"
+]
+
+[tool.mypy]
+pretty = true
+strict = true
+disable_error_code = [
+    "import",
+    "untyped-decorator",
 ]
 
