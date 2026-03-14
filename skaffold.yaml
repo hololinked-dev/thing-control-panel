@@ -148,18 +148,44 @@ profiles:
         path: /build/artifacts/0/docker/target
         value: staging
   - name: dev
+
 ---
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
-  name: ingress
+  name: cert-issuer
 deploy:
   helm:
     releases:
-      - name: ingress
-        chartPath: deployment/helm/ingress
-        namespace: "{{ or .NAMESPACE default }}"
+      - name: cert-issuer
+        chartPath: deployment/helm/cert-issuer
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        setValueTemplates:
+          environment: "{{ .DEPLOYMENT_ENV }}"
         valuesFiles:
-          - deployment/helm/ingress/values.yaml
+          - deployment/helm/cert-issuer/values.yaml
+
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: gateway
+deploy:
+  helm:
+    releases:
+      - name: "{{ .NAMESPACE }}-namespace-gateway"
+        chartPath: deployment/helm/gateway
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        valuesFiles:
+          - deployment/helm/gateway/values.yaml
         setValues:
-          nameOverride: ingress
+          nameOverride: gateway # should match the routes below
+        setValueTemplates:
+          environment: "{{ .DEPLOYMENT_ENV }}"
+          cert.environment: "{{ .DEPLOYMENT_ENV }}"
+          hostname: "{{ .DOMAIN_NAME }}"
+

@@ -17,6 +17,7 @@ export default defineConfig({
         'process.env': process.env
     },   
     server: {
-        host: '0.0.0.0'
-    }
+        host: '0.0.0.0',
+        allowedHosts: ['.hololinked.net', '.hololinked.dev']
+    },
 })

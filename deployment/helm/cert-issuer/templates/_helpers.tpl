@@ -66,7 +66,7 @@ Create the name of the service account to use
 certificate server
 */}}
 {{- define "cert-issuer.acmeServer" -}}
-{{- if eq .Values.environment "prod" -}}
+{{- if or (eq .Values.environment "prod") (eq .Values.environment "staging") -}}
 https://acme-v02.api.letsencrypt.org/directory
 {{- else -}}
 https://acme-staging-v02.api.letsencrypt.org/directory

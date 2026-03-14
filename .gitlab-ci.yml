@@ -1,5 +1,6 @@
 variables:
   VERSION: v0.0.1dev
+  DOMAIN_ADMIN_EMAIL: it-admin@hololinked.dev
 
 default:
   interruptible: true
@@ -11,16 +12,19 @@ workflow:
         DEPLOYMENT_ENV: prod
         NAMESPACE: prod
         KUBECONFIG_BASE64: $KUBECONFIG_B64
+        DOMAIN_NAME: "hololinked.io"
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOYMENT_ENV: staging
         NAMESPACE: staging
         KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
+        DOMAIN_NAME: "hololinked.net"
     - if: $CI_COMMIT_BRANCH
       variables:
         DEPLOYMENT_ENV: dev
         NAMESPACE: $CI_COMMIT_REF_SLUG
         KUBECONFIG_BASE64: $KUBECONFIG_B64_TEST
+        DOMAIN_NAME: "hololinked.net"
 
 stages:
   - prepare
@@ -128,6 +132,8 @@ include:
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
       NAMESPACE=$NAMESPACE
+      DOMAIN_NAME=$DOMAIN_NAME
+      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -171,6 +177,8 @@ documentation:build:
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
       NAMESPACE=$NAMESPACE
+      DOMAIN_NAME=$DOMAIN_NAME
+      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -183,10 +191,20 @@ documentation:build:
         skaffold deploy -m $MODULE -p $DEPLOYMENT_ENV
       fi
 
-namespace:deploy:
+1-namespace:deploy:
   extends: .deploy.template
   script:
     - kubectl create namespace $NAMESPACE || echo "Namespace $NAMESPACE already exists"
+
+2-cert-issuer:deploy:
+  extends: .deploy.template
+  variables:
+    MODULE: cert-issuer
+
+gateway:deploy:
+  extends: .deploy.template
+  variables:
+    MODULE: gateway
 
 frontend:deploy:
   extends: .deploy.template
@@ -233,6 +251,20 @@ documentation:deploy:
   script:
     - helm rollback $RELEASE_NAME -n $NAMESPACE
 
+1-cert-issuer:rollback:
+  extends: .rollback.template
+  needs:
+    - 2-cert-issuer:deploy
+  variables:
+    RELEASE_NAME: cert-issuer
+
+gateway:rollback:
+  extends: .rollback.template
+  needs:
+    - gateway:deploy
+  variables:
+    RELEASE_NAME: gateway
+
 frontend:rollback:
   extends: .rollback.template
   needs:
@@ -271,6 +303,8 @@ documentation:rollback:
       SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
       VERSION=$VERSION
       NAMESPACE=$NAMESPACE
+      DOMAIN_NAME=$DOMAIN_NAME
+      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
       EOF
     - |
       echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
@@ -278,13 +312,23 @@ documentation:rollback:
   script:
     - skaffold delete -m $MODULE -p $DEPLOYMENT_ENV
 
-namespace:undeploy:
+1-namespace:undeploy:
   extends: .undeploy:template
   script:
     - skaffold delete -m frontend -p $DEPLOYMENT_ENV
     - skaffold delete -m backend -p $DEPLOYMENT_ENV
     - kubectl delete all --all -n $NAMESPACE
     - kubectl delete namespace $NAMESPACE
+
+2-cert-issuer:undeploy:
+  extends: .undeploy:template
+  variables:
+    MODULE: cert-issuer
+
+gateway:undeploy:
+  extends: .undeploy:template
+  variables:
+    MODULE: gateway
 
 frontend:undeploy:
   extends: .undeploy:template

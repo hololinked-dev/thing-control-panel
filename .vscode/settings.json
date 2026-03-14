@@ -29,15 +29,17 @@
     "[yaml]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
     },
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
     },
-    "prettier.tabWidth": 2, 
+    "prettier.tabWidth": 2,
     "prettier.useTabs": true,
     "prettier.printWidth": 120,
     "prettier.endOfLine": "lf",
+    "prettier.ignorePath": ".prettierignore",
     "ruff.lineLength": 120,
-    "teraform.experimentalFeatures.validateOnSave": true
+    "teraform.experimentalFeatures.validateOnSave": true,
 }

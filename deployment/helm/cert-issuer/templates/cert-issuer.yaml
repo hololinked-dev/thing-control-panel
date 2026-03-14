@@ -1,6 +1,6 @@
 {{- if .Values.enabled }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   name: letsencrypt-{{ .Values.environment }}
 spec:
@@ -11,6 +11,9 @@ spec:
       name: {{ include "cert-issuer.fullname" . }}-key
     solvers:
       - http01:
-          ingress:
-            ingressClassName: {{ .Values.ingressClassName }}
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: {{ .Release.Namespace }}-namespace-gateway
+                namespace: {{ .Release.Namespace }}
+                kind: Gateway
 {{- end }}

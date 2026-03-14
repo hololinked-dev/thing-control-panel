@@ -1,0 +1,38 @@
+{{- if .Values.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "gateway.fullname" . }}
+  labels:
+    {{- include "gateway.labels" . | nindent 4 }}
+  annotations:
+    {{- if and .Values.cert.enabled .Values.cert.environment }}
+    cert-manager.io/issuer: letsencrypt-{{ .Values.cert.environment | lower }}
+    {{- end }}
+    {{- with .Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  gatewayClassName: kgateway-external-{{ $.Release.Namespace }}
+  listeners:
+    - name: {{ printf "https-%s" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+      hostname: {{ $.Values.hostname }}
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: {{ printf "%s-tls" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: {{ printf "http-%s" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+      hostname: {{ $.Values.hostname }}
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+{{- end }}
+
