@@ -164,6 +164,7 @@ deploy:
         wait: true
         setValueTemplates:
           environment: "{{ .DEPLOYMENT_ENV }}"
+          email: "{{ .DOMAIN_ADMIN_EMAIL }}"
         valuesFiles:
           - deployment/helm/cert-issuer/values.yaml
 
