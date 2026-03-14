@@ -3,5 +3,5 @@ fullnameOverride: ""
 
 enabled: true
 environment: prod
-ingressClassName: nginx
+
 email: ""

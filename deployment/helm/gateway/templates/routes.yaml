@@ -1,0 +1,25 @@
+{{- if .Values.enabled -}}
+{{- range $route := .Values.routes }}
+{{- $hasTLS := $route.tls -}}
+{{- $sectionName :=  printf "%s-%s" (ternary "https" "http" $hasTLS) ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-%s" $route.name "route" | replace "." "-" | trunc 63 | trimSuffix "-" }}
+  {{- if eq $.Values.externalDNS true }}
+  annotations:
+    external-dns.alpha.kubernetes.io/enabled: "true"
+    external-dns.alpha.kubernetes.io/ttl: {{ if eq $.Values.environment "prod" }}"3600"{{ else }}"120"{{ end }}
+  {{- end }}
+spec:
+  parentRefs:
+    - name: {{ include "gateway.fullname" $ }}
+      namespace: {{ $.Release.Namespace }}
+      sectionName: {{ $sectionName }}
+  hostnames:
+    - {{ $.Values.hostname }}
+  rules:
+    {{- toYaml $route.rules | nindent 4 }}
+{{- end }}
+{{- end }}

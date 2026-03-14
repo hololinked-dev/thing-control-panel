@@ -1,4 +1,0 @@
-There are applications at the following URLs:
-  {{- range .Values.rules }}
-  https://{{ .host }}
-  {{- end }}

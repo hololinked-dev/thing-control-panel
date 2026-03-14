@@ -1,0 +1,45 @@
+nameOverride: ""
+fullnameOverride: ""
+
+enabled: true
+environment: dev
+component: gateway
+
+externalDNS: true 
+
+hostname: hololinked.net
+
+cert:
+  environment: dev
+  enabled: true
+
+routes:
+  - name: frontend
+    tls: true
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        backendRefs:
+          - name: frontend
+            port: 80
+  - name: backend
+    tls: true
+    rules:
+      - matches:
+        - path:
+            type: PathPrefix
+            value: /api
+        backendRefs:
+          - name: backend
+            port: 80
+  - name: http-upgrade-to-https
+    tls: false
+    rules:
+      - filters:
+          - type: RequestRedirect
+            requestRedirect:
+              scheme: https
+              statusCode: 301
+
