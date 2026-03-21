@@ -19,7 +19,7 @@ app = FastAPI(
 )
 
 
-@app.get("/healthz", tags=["Health"])
+@app.get("/api/healthz", tags=["Health"])
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
 

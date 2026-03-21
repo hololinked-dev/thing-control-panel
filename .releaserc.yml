@@ -4,5 +4,5 @@ branches:
 plugins:
   # Uses the RELEASE_TYPE env var (major | minor | patch) instead of analyzing commits
   - - "@semantic-release/exec"
-    - analyzeCommitsCmd: "printf '${RELEASE_TYPE}'"
-      success: "echo ${nextRelease.version} > version.env"
+    - analyzeCommitsCmd: "if [ ${commits.length} -eq 0 ]; then exit 0; else printf '<%= process.env.RELEASE_TYPE %>'; fi"
+      success: "echo VERSION=<%= nextRelease.gitTag %> > version.env"
