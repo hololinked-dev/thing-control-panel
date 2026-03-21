@@ -1,0 +1,8 @@
+branches:
+  - main
+
+plugins:
+  # Uses the RELEASE_TYPE env var (major | minor | patch) instead of analyzing commits
+  - - "@semantic-release/exec"
+    - analyzeCommitsCmd: "printf '${RELEASE_TYPE}'"
+      success: "echo ${nextRelease.version} > version.env"

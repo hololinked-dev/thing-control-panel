@@ -1,5 +1,5 @@
 variables:
-  VERSION: v0.0.1dev
+  PLACEHOLDER_VERSION: v0.0.1dev
   DOMAIN_ADMIN_EMAIL: it-admin@hololinked.dev
 
 default:
@@ -31,6 +31,7 @@ stages:
   - codestyle
   - security
   - test
+  - release
   - build
   - deploy
   - rollback
@@ -108,6 +109,58 @@ dev-job-runner:build:
     expire_in: 30 days
 
 ###########
+# Release #
+###########
+
+# Triggered manually via the GitLab UI "Run pipeline" button.
+# Required variables:
+#   SEMANTIC_RELEASE = "true"
+#   RELEASE_TYPE     = "major" | "minor" | "patch"
+semantic-release:
+  stage: release
+  image: $CI_REGISTRY_IMAGE/dev-job-runner:$CI_PIPELINE_ID
+  needs:
+    - dev-job-runner:build
+  variables:
+    GITLAB_TOKEN: $SEMANTIC_RELEASE_TOKEN
+    RELEASE_TYPE: "minor"
+    SEMANTIC_RELEASE: "false" # flag to trigger manually
+  before_script:
+    - |
+      if [[ "$RELEASE_TYPE" != "major" && "$RELEASE_TYPE" != "minor" && "$RELEASE_TYPE" != "patch" ]]; then
+        echo "ERROR: RELEASE_TYPE must be one of: major, minor, patch. Got: '$RELEASE_TYPE'"
+        exit 1
+      fi
+  script:
+    - |
+      if [ "$CI_PIPELINE_SOURCE" == "web" ] && [ "$SEMANTIC_RELEASE" == "true" ] && [ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]; then
+        semantic-release
+      else
+        echo "Skipping semantic-release. To trigger a release, run a pipeline manually from the default branch in GitLab UI and set SEMANTIC_RELEASE=true and RELEASE_TYPE to major, minor, or patch."
+      fi
+    - |
+      # Resolve VERSION and write version.env for downstream build jobs
+      if [ -f version.env ]; then
+        source version.env
+      elif [ -n "$CI_COMMIT_TAG" ]; then
+        VERSION=$CI_COMMIT_TAG
+      elif [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        VERSION="main.dev$CI_COMMIT_SHORT_SHA"
+      elif [ -n "$CI_COMMIT_BRANCH" ]; then
+        VERSION="${CI_COMMIT_REF_SLUG:0:45}.dev$CI_COMMIT_SHORT_SHA"
+      else
+        VERSION=$PLACEHOLDER_VERSION
+      fi
+      # overwrite
+      echo "VERSION=$VERSION" > version.env
+  after_script:
+    - source version.env && echo "Determined version - $VERSION"
+  artifacts:
+    reports:
+      dotenv: version.env
+    expire_in: 1 day
+
+###########
 # Imports #
 ###########
 
@@ -115,6 +168,33 @@ include:
   - local: frontend/.gitlab-ci.yml
   - local: backend/.gitlab-ci.yml
   - local: deployment/.gitlab-ci.yml
+
+#################
+# ops templates #
+#################
+
+.create-skaffold-dotenv: &create-skaffold-dotenv |
+  cat <<EOF >> skaffold.env
+  SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
+  VERSION=$VERSION
+  NAMESPACE=$NAMESPACE
+  DOMAIN_NAME=$DOMAIN_NAME
+  DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
+  EOF
+
+.export-kubeconfig: &export-kubeconfig |
+  echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
+  export KUBECONFIG="$PWD/kubeconfig.yaml"
+
+.docker-login: &docker-login |
+  echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+
+.update-helm-app-version: &update-helm-app-version |
+  for chart in deployment/helm/*/Chart.yaml; do
+    if [ -f "$chart" ]; then
+      sed -i "s|^appVersion:.*|appVersion: \"$VERSION\"|" "$chart"
+    fi
+  done
 
 #########
 # Build #
@@ -125,19 +205,16 @@ include:
   image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
   variables:
     MODULE: ""
+  needs:
+    - semantic-release
+    - dev-job-runner:build
+  dependencies:
+    - semantic-release
+    - dev-job-runner:build
   before_script:
-    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - |
-      cat <<EOF >> skaffold.env
-      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
-      VERSION=$VERSION
-      NAMESPACE=$NAMESPACE
-      DOMAIN_NAME=$DOMAIN_NAME
-      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
-      EOF
-    - |
-      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
-      export KUBECONFIG="$PWD/kubeconfig.yaml"
+    - *docker-login
+    - *export-kubeconfig
+    - *create-skaffold-dotenv
   script:
     - skaffold build --file-output skaffold-deploy-$MODULE.json -p $DEPLOYMENT_ENV -m $MODULE
   artifacts:
@@ -171,18 +248,16 @@ documentation:build:
   allow_failure: true
   variables:
     MODULE: ""
+  needs:
+    - semantic-release
+    - ops-job-runner:build
+  dependencies:
+    - semantic-release
+    - ops-job-runner:build
   before_script:
-    - |
-      cat <<EOF >> skaffold.env
-      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
-      VERSION=$VERSION
-      NAMESPACE=$NAMESPACE
-      DOMAIN_NAME=$DOMAIN_NAME
-      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
-      EOF
-    - |
-      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
-      export KUBECONFIG="$PWD/kubeconfig.yaml"
+    - *export-kubeconfig
+    - *create-skaffold-dotenv
+    - *update-helm-app-version
   script:
     - |
       if [ -f "skaffold-deploy-$MODULE.json" ]; then
@@ -201,7 +276,7 @@ documentation:build:
   variables:
     MODULE: cert-issuer
 
-gateway:deploy:
+3-gateway:deploy:
   extends: .deploy.template
   variables:
     MODULE: gateway
@@ -209,8 +284,10 @@ gateway:deploy:
 frontend:deploy:
   extends: .deploy.template
   needs:
+    - semantic-release
     - frontend:build
   dependencies:
+    - semantic-release
     - frontend:build
   variables:
     MODULE: frontend
@@ -218,8 +295,10 @@ frontend:deploy:
 backend:deploy:
   extends: .deploy.template
   needs:
+    - semantic-release
     - backend:build
   dependencies:
+    - semantic-release
     - backend:build
   variables:
     MODULE: backend
@@ -227,8 +306,10 @@ backend:deploy:
 documentation:deploy:
   extends: .deploy.template
   needs:
+    - semantic-release
     - documentation:build
   dependencies:
+    - semantic-release
     - documentation:build
   variables:
     MODULE: documentation
@@ -245,9 +326,7 @@ documentation:deploy:
   variables:
     RELEASE_NAME: ""
   before_script:
-    - |
-      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
-      export KUBECONFIG="$PWD/kubeconfig.yaml"
+    - *export-kubeconfig
   script:
     - helm rollback $RELEASE_NAME -n $NAMESPACE
 
@@ -258,10 +337,10 @@ documentation:deploy:
   variables:
     RELEASE_NAME: cert-issuer
 
-gateway:rollback:
+3-gateway:rollback:
   extends: .rollback.template
   needs:
-    - gateway:deploy
+    - 3-gateway:deploy
   variables:
     RELEASE_NAME: gateway
 
@@ -298,17 +377,8 @@ documentation:rollback:
   variables:
     MODULE: ""
   before_script:
-    - |
-      cat <<EOF >> skaffold.env
-      SKAFFOLD_DEFAULT_REPO=$CI_REGISTRY_IMAGE
-      VERSION=$VERSION
-      NAMESPACE=$NAMESPACE
-      DOMAIN_NAME=$DOMAIN_NAME
-      DOMAIN_ADMIN_EMAIL=$DOMAIN_ADMIN_EMAIL
-      EOF
-    - |
-      echo "$KUBECONFIG_BASE64" | base64 -d > kubeconfig.yaml
-      export KUBECONFIG="$PWD/kubeconfig.yaml"
+    - *export-kubeconfig
+    - *create-skaffold-dotenv
   script:
     - skaffold delete -m $MODULE -p $DEPLOYMENT_ENV
 
@@ -325,7 +395,7 @@ documentation:rollback:
   variables:
     MODULE: cert-issuer
 
-gateway:undeploy:
+3-gateway:undeploy:
   extends: .undeploy:template
   variables:
     MODULE: gateway
