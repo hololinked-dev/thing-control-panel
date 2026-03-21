@@ -17,18 +17,18 @@ COPY backend/ /app/backend/
 
 EXPOSE 5678
 
-CMD ["/bin/bash", "-c", ". .venv/bin/activate && python -Xfrozen_modules=off -m debugpy --listen 0.0.0:5678 -m uvicorn --app-dir src main:app --host 0.0.0.0 --port 5000 --reload --log-level critical"]
+CMD ["/bin/bash", "-c", ". .venv/bin/activate && python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 -m uvicorn --app-dir backend main:app --host 0.0.0.0 --port 5000 --reload --log-level info"]
 
 # ---- staging stage ----
 FROM base AS staging
 
 COPY backend/ /app/backend/
 
-CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir src main:app --host 0.0.0.0 --port 5000"]
+CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir backend main:app --host 0.0.0.0 --port 5000"]
 
 # ---- production stage ----
 FROM base AS prod
 
 COPY backend/ /app/backend/
 
-CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir src main:app --host 0.0.0.0 --port 5000"]
+CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir backend main:app --host 0.0.0.0 --port 5000"]

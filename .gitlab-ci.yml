@@ -123,11 +123,11 @@ semantic-release:
     - dev-job-runner:build
   variables:
     GITLAB_TOKEN: $SEMANTIC_RELEASE_TOKEN
-    RELEASE_TYPE: "minor"
+    RELEASE_TYPE: "patch"
     SEMANTIC_RELEASE: "false" # flag to trigger manually
   before_script:
     - |
-      if [[ "$RELEASE_TYPE" != "major" && "$RELEASE_TYPE" != "minor" && "$RELEASE_TYPE" != "patch" ]]; then
+      if [ "$RELEASE_TYPE" != "major" ] && [ "$RELEASE_TYPE" != "minor" ] && [ "$RELEASE_TYPE" != "patch" ]; then
         echo "ERROR: RELEASE_TYPE must be one of: major, minor, patch. Got: '$RELEASE_TYPE'"
         exit 1
       fi
