@@ -1,5 +1,5 @@
 [project]
-name = "thing-control-panel"
+name = "backend"
 version = "0.1.0"
 authors = [
     {name = "Vignesh Vaidyanathan", email = "info@hololinked.dev"},
@@ -15,7 +15,7 @@ dependencies = [
     "jsonschema>=4.22.0,<5.0",
     "structlog>=25.5.0",
     "argon2-cffi>=23.1.0",
-    "sqlalchemy>2.0.21",
+    "sqlalchemy[mypy]>2.0.21",
     "sqlalchemy-utils>=0.41",
     "psycopg2-binary>=2.9.11",
     "fastapi>=0.128.0",
@@ -93,6 +93,7 @@ exclude_dirs = [
 [tool.mypy]
 pretty = true
 strict = true
+plugins = ["sqlalchemy.ext.mypy.plugin"]
 disable_error_code = [
     "import",
     "untyped-decorator",

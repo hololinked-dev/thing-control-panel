@@ -1,10 +1,10 @@
 FROM python:3.13-slim AS base
 
-WORKDIR /app/backend
+WORKDIR /app/backend/src
 
-COPY backend/pyproject.toml backend/uv.lock /app/backend/
+COPY backend/src/pyproject.toml backend/src/uv.lock /app/backend/src/
 
-RUN pip install uv==0.9.0
+RUN pip install --no-cache-dir uv==0.9.0
 RUN uv venv && uv sync --no-install-project --no-dev
 
 EXPOSE 5000
@@ -13,7 +13,7 @@ EXPOSE 5000
 FROM base AS dev
 
 RUN uv sync --no-install-project --group dev
-COPY backend/ /app/backend/
+COPY backend/src/ /app/backend/src/
 
 EXPOSE 5678
 
@@ -22,13 +22,13 @@ CMD ["/bin/bash", "-c", ". .venv/bin/activate && python -Xfrozen_modules=off -m 
 # ---- staging stage ----
 FROM base AS staging
 
-COPY backend/ /app/backend/
+COPY backend/src/ /app/backend/src/
 
 CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir backend main:app --host 0.0.0.0 --port 5000"]
 
 # ---- production stage ----
 FROM base AS prod
 
-COPY backend/ /app/backend/
+COPY backend/src/ /app/backend/src/
 
 CMD ["/bin/bash", "-c", ". .venv/bin/activate && uvicorn --app-dir backend main:app --host 0.0.0.0 --port 5000"]

@@ -1,0 +1,43 @@
+# add modules here that will never be used in production
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: zitadel-database
+deploy:
+  helm:
+    releases:
+      - name: zitadel-database
+        chartPath: deployment/helm/postgres
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        valuesFiles:
+          - deployment/helm/postgres/values.yaml
+        setValues:
+          nameOverride: zitadel-database
+          postgres.user: zitadel
+          postgres.database: zitadel
+          credentials.create: true
+          credentials.name: zitadel-db-credentials
+
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: backend-database
+deploy:
+  helm:
+    releases:
+      - name: backend-database
+        chartPath: deployment/helm/postgres
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        valuesFiles:
+          - deployment/helm/postgres/values.yaml
+        setValues:
+          nameOverride: backend-database
+          postgres.user: backend
+          postgres.database: backend
+          credentials.create: true
+          credentials.name: backend-db-credentials

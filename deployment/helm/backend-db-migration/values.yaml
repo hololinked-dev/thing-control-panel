@@ -1,0 +1,55 @@
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/hololinked/thing-control-panel/backend-db-migration
+  pullPolicy: Always
+  tag: "latest"
+  
+migration:
+  direction: "upgrade"
+  targetVersion: "head"
+
+job:
+  completions: 1
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 11849600 # 14 days
+  activeDeadlineSeconds: 3600
+  restartPolicy: Never
+
+database:
+  credentialsSecret: "backend-db-credentials"
+  credentialsKey: "dsn"
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env: {}

@@ -22,7 +22,7 @@ ENV PATH="/root/.local/bin:${PATH}"
 RUN uv venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 
-COPY backend/pyproject.toml /backend/pyproject.toml
+COPY backend/src/pyproject.toml /backend/pyproject.toml
 RUN . /opt/venv/bin/activate && \ 
     uv sync --no-install-project --no-cache-dir \
     --only-group scanning --only-group dev \
