@@ -282,6 +282,15 @@ documentation:build:
   variables:
     MODULE: gateway
 
+zitadel-iam:deploy:
+  extends: .deploy.template
+  needs:
+    - semantic-release
+  dependencies:
+    - semantic-release
+  variables:
+    MODULE: zitadel-iam
+
 frontend:deploy:
   extends: .deploy.template
   needs:
@@ -345,6 +354,13 @@ documentation:deploy:
   variables:
     RELEASE_NAME: gateway
 
+zitadel-iam:rollback:
+  extends: .rollback.template
+  needs:
+    - zitadel-iam:deploy
+  variables:
+    RELEASE_NAME: zitadel-iam
+
 frontend:rollback:
   extends: .rollback.template
   needs:
@@ -400,6 +416,11 @@ documentation:rollback:
   extends: .undeploy:template
   variables:
     MODULE: gateway
+
+zitadel-iam:undeploy:
+  extends: .undeploy:template
+  variables:
+    MODULE: zitadel-iam
 
 frontend:undeploy:
   extends: .undeploy:template

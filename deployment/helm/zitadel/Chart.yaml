@@ -1,0 +1,11 @@
+apiVersion: v2
+name: zitadel-umbrella
+description: Umbrella chart for Zitadel IAM with custom resources
+type: application
+version: 0.1.0
+appVersion: "v4.12.1"
+
+dependencies:
+  - name: zitadel
+    version: 9.27.1
+    repository: https://charts.zitadel.com

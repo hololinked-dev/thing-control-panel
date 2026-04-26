@@ -1,0 +1,71 @@
+{{- if eq .Values.mode "import" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zitadel-ops.fullname" . }}-import
+  labels:
+    {{- include "zitadel-ops.labels" . | nindent 4 }}
+spec:
+  completions: {{ .Values.job.completions }}
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+  activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "zitadel-ops.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: {{ .Values.job.restartPolicy }}
+      containers:
+        - name: import
+          image: alpine:3.19
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              apk add --no-cache curl jq > /dev/null 2>&1
+              
+              TOKEN=$(cat /secrets/pat)
+
+              if [ ! -f /restore/export.json ]; then
+                echo "ERROR: /restore/export.json not found"
+                echo "Available files:"
+                ls -lh /restore/
+                exit 1
+              fi
+              
+              echo "Starting Zitadel import..."
+              
+              # Import organization data
+              curl -sf -X POST "${ZITADEL_URL}/admin/v1/import" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d @/restore/export.json
+              
+              echo "Import completed successfully"
+          env:
+            - name: ZITADEL_URL
+              value: {{ .Values.url | quote }} # not necessary to mount as env
+          volumeMounts:
+            - name: admin-pat
+              mountPath: /secrets
+              readOnly: true
+            - name: restore-data
+              mountPath: /restore
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: admin-pat
+          secret:
+            secretName: {{ .Values.patSecretName }}
+        - name: restore-data
+          configMap:
+            name: zitadel-restore-data
+{{- end }}
+

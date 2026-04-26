@@ -1,0 +1,70 @@
+# Custom values for the umbrella chart
+masterKey:
+  name: zitadel-masterkey
+
+# Values passed to the zitadel subchart
+zitadel:
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/zitadel/zitadel
+    tag: "v4.13.0"
+    pullPolicy: Always
+
+  login:
+    image:
+      repository: ghcr.io/zitadel/zitadel-login
+      tag: "v4.13.0"
+      pullPolicy: Always
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+        
+  env:
+  - name: ZITADEL_DATABASE_POSTGRES_DSN
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-db-credentials
+        key: dsn
+
+  zitadel:
+    masterkeySecretName: zitadel-masterkey
+    configmapConfig:
+      ExternalDomain: "hololinked.net"
+      ExternalPort: 443
+      ExternalSecure: true
+      TLS:
+        Enabled: false
+      FirstInstance:
+        # https://github.com/zitadel/zitadel/blob/main/cmd/setup/steps.yaml#L115
+        Org:
+          Human:
+            UserName: admin
+            FirstName: Admin
+            LastName: User
+            Email: admin@hololinked.net
+            Password: ""
+            PasswordChangeRequired: false
+          Machine:
+            MachineKey:
+              ExpirationDate: "2029-01-01T00:00:00Z"
+              Type: 1  # JSON key format
+            Pat:
+              ExpirationDate: "2029-01-01T00:00:00Z"
+
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1

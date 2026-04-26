@@ -1,0 +1,23 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: zitadel-database
+deploy:
+  helm:
+    releases:
+      - name: zitadel-database
+        chartPath: deployment/helm/postgres
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        valuesFiles:
+          - deployment/helm/postgres/values.yaml
+        setValues:
+          nameOverride: zitadel-database
+          postgres.user: zitadel
+          postgres.password: your-secure-app-password
+          postgres.database: zitadel
+          credentials.create: true
+          credentials.name: zitadel-db-credentials
+
+---

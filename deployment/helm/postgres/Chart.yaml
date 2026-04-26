@@ -1,0 +1,6 @@
+apiVersion: v2
+name: simple-postgres
+description: Extremely simple postgres deployment, especially for testing/staging
+type: application
+version: 0.1.0
+appVersion: "16"
