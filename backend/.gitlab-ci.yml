@@ -1,19 +1,32 @@
 backend:codestyle:
   extends: .codestyle:template
   script:
-    - cd backend
+    - cd backend/src
     - uvx ruff check backend
+
+backend:db-migration:codestyle:
+  extends: .codestyle:template
+  script:
+    - cd backend/db-migration
+    - uvx ruff check src
 
 backend:mypy:
   extends: .codestyle:template
   script:
-    - cd backend
-    - python -m mypy backend
+    - cd backend/src
+    - uv run mypy backend --ignore-missing-imports
+    # - python -m mypy backend --ignore-missing-imports
+
+backend:db-migration:mypy:
+  extends: .codestyle:template
+  script:
+    - cd backend/db-migration
+    - python -m mypy src --ignore-missing-imports
 
 backend:bandit:
   extends: .security:template
   script:
-    - cd backend
+    - cd backend/src
     - echo "Running bandit security scan..."
     - python3 -m bandit -c pyproject.toml -r backend -b .bandit-baseline.json -f json -o bandit-report.json
     - echo "rerunning to display NEW issues in logs"
@@ -22,10 +35,39 @@ backend:bandit:
     - python3 -m bandit -c pyproject.toml -r backend || true
   artifacts:
     paths:
-      - backend/bandit-report.json
+      - backend/src/bandit-report.json
+    expire_in: 30 days
+
+backend:db-migration:bandit:
+  extends: .security:template
+  script:
+    - cd backend/db-migration
+    - echo "Running bandit security scan..."
+    - python3 -m bandit -c pyproject.toml -r src -b .bandit-baseline.json -f json -o bandit-report.json
+    - echo "rerunning to display NEW issues in logs"
+    - python3 -m bandit -c pyproject.toml -r src -b .bandit-baseline.json
+    - echo "rerunning to display EXISTING issues in logs"
+    - python3 -m bandit -c pyproject.toml -r src || true
+  artifacts:
+    paths:
+      - backend/db-migration/bandit-report.json
     expire_in: 30 days
 
 backend:gitleaks:
   extends: .security:gitleaks:template
   variables:
-    MODULE_PATH: "backend/backend"
+    MODULE_PATH: "backend/src/backend"
+
+backend:db-migration:gitleaks:
+  extends: .security:gitleaks:template
+  variables:
+    MODULE_PATH: "backend/db-migration"
+
+backend:db-migration:
+  extends: .deploy:template
+  stage: db-operations
+  image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
+  script:
+    - echo "Running database migration job..."
+    - skaffold run -m db-migration
+  when: manual

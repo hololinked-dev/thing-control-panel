@@ -33,6 +33,7 @@ stages:
   - test
   - release
   - build
+  - db-operations
   - deploy
   - rollback
   - undeploy
@@ -160,15 +161,6 @@ semantic-release:
       dotenv: version.env
     expire_in: 1 day
 
-###########
-# Imports #
-###########
-
-include:
-  - local: frontend/.gitlab-ci.yml
-  - local: backend/.gitlab-ci.yml
-  - local: deployment/.gitlab-ci.yml
-
 #################
 # ops templates #
 #################
@@ -242,7 +234,7 @@ documentation:build:
 # Deploy #
 ##########
 
-.deploy.template:
+.deploy:template:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
   when: manual
@@ -268,22 +260,22 @@ documentation:build:
       fi
 
 1-namespace:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   script:
     - kubectl create namespace $NAMESPACE || echo "Namespace $NAMESPACE already exists"
 
 2-cert-issuer:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   variables:
     MODULE: cert-issuer
 
 3-gateway:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   variables:
     MODULE: gateway
 
 zitadel-iam:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   needs:
     - semantic-release
   dependencies:
@@ -292,7 +284,7 @@ zitadel-iam:deploy:
     MODULE: zitadel-iam
 
 frontend:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   needs:
     - semantic-release
     - frontend:build
@@ -303,7 +295,7 @@ frontend:deploy:
     MODULE: frontend
 
 backend:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   needs:
     - semantic-release
     - backend:build
@@ -314,7 +306,7 @@ backend:deploy:
     MODULE: backend
 
 documentation:deploy:
-  extends: .deploy.template
+  extends: .deploy:template
   needs:
     - semantic-release
     - documentation:build
@@ -328,7 +320,7 @@ documentation:deploy:
 # Rollback #
 ############
 
-.rollback.template:
+.rollback:template:
   stage: rollback
   image: $CI_REGISTRY_IMAGE/ops-job-runner:$CI_PIPELINE_ID
   when: manual
@@ -341,42 +333,42 @@ documentation:deploy:
     - helm rollback $RELEASE_NAME -n $NAMESPACE
 
 1-cert-issuer:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - 2-cert-issuer:deploy
   variables:
     RELEASE_NAME: cert-issuer
 
 3-gateway:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - 3-gateway:deploy
   variables:
     RELEASE_NAME: gateway
 
 zitadel-iam:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - zitadel-iam:deploy
   variables:
     RELEASE_NAME: zitadel-iam
 
 frontend:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - frontend:deploy
   variables:
     RELEASE_NAME: frontend
 
 backend:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - backend:deploy
   variables:
     RELEASE_NAME: backend
 
 documentation:rollback:
-  extends: .rollback.template
+  extends: .rollback:template
   needs:
     - documentation:deploy
   variables:
@@ -436,3 +428,12 @@ documentation:undeploy:
   extends: .undeploy:template
   variables:
     MODULE: documentation
+
+###########
+# Imports #
+###########
+
+include:
+  - local: frontend/.gitlab-ci.yml
+  - local: backend/.gitlab-ci.yml
+  - local: deployment/.gitlab-ci.yml

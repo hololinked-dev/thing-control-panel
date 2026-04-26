@@ -102,11 +102,11 @@ build:
     - image: backend
       context: .
       docker:
-        dockerfile: backend/Dockerfile
+        dockerfile: backend/src/Dockerfile
         target: dev
       sync:
         manual:
-          - src: "backend/src/**/*"
+          - src: "backend/src/backend/**/*"
             dest: /app
   tagPolicy:
     envTemplate:
@@ -211,3 +211,47 @@ deploy:
           zitadel.zitadel.configmapConfig.ExternalDomain: "auth.{{ .DOMAIN_NAME }}"
           zitadel.zitadel.configmapConfig.FirstInstance.Org.Human.Email: "{{ .DOMAIN_ADMIN_EMAIL }}"
           zitadel.zitadel.configmapConfig.FirstInstance.Org.Human.Password: "{{ .IAM_ADMIN_PASSWORD }}"
+
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: backend-db-migration
+build:
+  artifacts:
+    - image: backend-db-migration
+      context: .
+      docker:
+        dockerfile: backend/db-migration/Dockerfile
+      sync:
+        manual:
+          - src: "backend/db-migration/backend/**/*"
+            dest: /app
+  tagPolicy:
+    envTemplate:
+      template: "{{ or .VERSION .NAMESPACE }}"
+  local:
+    push: true
+deploy:
+  helm:
+    releases:
+      - name: backend-db-migration
+        chartPath: deployment/helm/backend-db-migration
+        namespace: "{{ or .NAMESPACE default }}"
+        createNamespace: true
+        setValues:
+          nameOverride: backend-db-migration
+          migration.direction: "upgrade"
+          migration.targetVersion: "head"
+        setValueTemplates:
+          image.repository: "{{ .IMAGE_REPO_backend_db_migration }}"
+          image.tag: "{{ .IMAGE_TAG_backend_db_migration }}@{{ .IMAGE_DIGEST_backend_db_migration }}"
+profiles:
+  - name: downgrade
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/setValues/migration.direction
+        value: "downgrade"
+      - op: replace
+        path: /deploy/helm/releases/0/setValues/migration.targetVersion
+        value: "-1"
