@@ -5,9 +5,11 @@ enabled: true
 environment: dev
 component: gateway
 
-externalDNS: true 
+externalDNS: true
 
-hostname: hololinked.net
+hostnames:
+  tld: hololinked.net
+  auth: auth.hololinked.net
 
 cert:
   environment: dev
@@ -16,6 +18,7 @@ cert:
 routes:
   - name: frontend
     tls: true
+    hostnameRef: tld
     rules:
       - matches:
           - path:
@@ -26,6 +29,7 @@ routes:
             port: 80
   - name: backend
     tls: true
+    hostnameRef: tld
     rules:
       - matches:
         - path:
@@ -34,8 +38,40 @@ routes:
         backendRefs:
           - name: backend
             port: 80
-  - name: http-upgrade-to-https
+  - name: zitadel-iam
+    tls: true
+    hostnameRef: auth
+    rules:
+      - matches:
+        - path:
+            type: PathPrefix
+            value: /
+        backendRefs:
+          - name: zitadel-iam
+            port: 8080
+  - name: zitadel-iam-login
+    tls: true
+    hostnameRef: auth
+    rules:
+      - matches:
+        - path:
+            type: PathPrefix
+            value: /ui/v2/login
+        backendRefs:
+          - name: zitadel-iam-login
+            port: 3000
+  - name: http-upgrade-to-https-tld
     tls: false
+    hostnameRef: tld
+    rules:
+      - filters:
+          - type: RequestRedirect
+            requestRedirect:
+              scheme: https
+              statusCode: 301
+  - name: http-upgrade-to-https-auth
+    tls: false
+    hostnameRef: auth
     rules:
       - filters:
           - type: RequestRedirect

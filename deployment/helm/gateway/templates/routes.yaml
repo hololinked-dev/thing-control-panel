@@ -1,7 +1,7 @@
 {{- if .Values.enabled -}}
 {{- range $route := .Values.routes }}
 {{- $hasTLS := $route.tls -}}
-{{- $sectionName :=  printf "%s-%s" (ternary "https" "http" $hasTLS) ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+{{- $sectionName :=  printf "%s-%s" (ternary "https" "http" $hasTLS) (index $.Values.hostnames $route.hostnameRef | replace "." "-" ) | trunc 63 | trimSuffix "-" }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -18,7 +18,7 @@ spec:
       namespace: {{ $.Release.Namespace }}
       sectionName: {{ $sectionName }}
   hostnames:
-    - {{ $.Values.hostname }}
+    - {{ index $.Values.hostnames $route.hostnameRef }}
   rules:
     {{- toYaml $route.rules | nindent 4 }}
 {{- end }}

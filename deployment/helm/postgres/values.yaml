@@ -1,0 +1,16 @@
+image:
+  repository: postgres
+  tag: "16"
+
+postgres:
+  user: appuser
+  password: apppassword
+  database: appdb
+
+service:
+  port: 5432
+
+credentials:
+  create: true
+  name: db-credentials
+  dsnKey: dsn

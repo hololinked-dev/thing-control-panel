@@ -1,6 +1,48 @@
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
+  name: cert-issuer
+deploy:
+  helm:
+    releases:
+      - name: cert-issuer
+        chartPath: deployment/helm/cert-issuer
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        setValueTemplates:
+          environment: "{{ .DEPLOYMENT_ENV }}"
+          email: "{{ .DOMAIN_ADMIN_EMAIL }}"
+        valuesFiles:
+          - deployment/helm/cert-issuer/values.yaml
+
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: gateway
+deploy:
+  helm:
+    releases:
+      - name: "{{ .NAMESPACE }}-namespace-gateway"
+        chartPath: deployment/helm/gateway
+        namespace: "{{ .NAMESPACE }}"
+        createNamespace: true
+        wait: true
+        valuesFiles:
+          - deployment/helm/gateway/values.yaml
+        setValues:
+          nameOverride: gateway # should match the routes below
+        setValueTemplates:
+          environment: "{{ .DEPLOYMENT_ENV }}"
+          cert.environment: "{{ .DEPLOYMENT_ENV }}"
+          hostnames:
+            tld: "{{ .DOMAIN_NAME }}"
+            auth: "auth.{{ .DOMAIN_NAME }}"
+---
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
   name: frontend
 build:
   artifacts:
@@ -49,6 +91,7 @@ profiles:
         path: /deploy/helm/releases/0/setValues/image.ports.containerPort
         value: 80
   - name: dev
+
 ---
 apiVersion: skaffold/v4beta13
 kind: Config
@@ -95,8 +138,8 @@ profiles:
         path: /build/artifacts/0/docker/target
         value: staging
   - name: dev
+
 ---
-# development version of the Python docs
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
@@ -153,40 +196,18 @@ profiles:
 apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
-  name: cert-issuer
+  name: zitadel-iam
 deploy:
   helm:
     releases:
-      - name: cert-issuer
-        chartPath: deployment/helm/cert-issuer
-        namespace: "{{ .NAMESPACE }}"
-        createNamespace: true
-        wait: true
-        setValueTemplates:
-          environment: "{{ .DEPLOYMENT_ENV }}"
-          email: "{{ .DOMAIN_ADMIN_EMAIL }}"
-        valuesFiles:
-          - deployment/helm/cert-issuer/values.yaml
-
----
-apiVersion: skaffold/v4beta13
-kind: Config
-metadata:
-  name: gateway
-deploy:
-  helm:
-    releases:
-      - name: "{{ .NAMESPACE }}-namespace-gateway"
-        chartPath: deployment/helm/gateway
+      - name: zitadel-iam
+        chartPath: deployment/helm/zitadel
         namespace: "{{ .NAMESPACE }}"
         createNamespace: true
         wait: true
         valuesFiles:
-          - deployment/helm/gateway/values.yaml
-        setValues:
-          nameOverride: gateway # should match the routes below
+          - deployment/helm/zitadel/values-override.yaml
         setValueTemplates:
-          environment: "{{ .DEPLOYMENT_ENV }}"
-          cert.environment: "{{ .DEPLOYMENT_ENV }}"
-          hostname: "{{ .DOMAIN_NAME }}"
-
+          zitadel.zitadel.configmapConfig.ExternalDomain: "auth.{{ .DOMAIN_NAME }}"
+          zitadel.zitadel.configmapConfig.FirstInstance.Org.Human.Email: "{{ .DOMAIN_ADMIN_EMAIL }}"
+          zitadel.zitadel.configmapConfig.FirstInstance.Org.Human.Password: "{{ .IAM_ADMIN_PASSWORD }}"

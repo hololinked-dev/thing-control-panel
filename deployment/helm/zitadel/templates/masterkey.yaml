@@ -1,0 +1,15 @@
+{{- if not (lookup "v1" "Secret" .Release.Namespace .Values.masterKey.name).data }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.masterKey.name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": never
+    "helm.sh/resource-policy": keep
+type: Opaque
+immutable: true
+stringData:
+  masterkey: {{ randAlphaNum 32 | quote }}
+{{- end }}

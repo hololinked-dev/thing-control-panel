@@ -1,0 +1,23 @@
+nameOverride: ""
+fullnameOverride: ""
+
+patSecretName: iam-admin-pat # default value
+
+mode: export # or import
+
+url: https://auth.hololinked.net
+
+job:
+  completions: 1
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600 # 1 hour
+  activeDeadlineSeconds: 600 # 10 minutes
+  restartPolicy: Never
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

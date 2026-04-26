@@ -1,0 +1,61 @@
+{{- if eq .Values.mode "export" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zitadel-ops.fullname" . }}-export
+  labels:
+    {{- include "zitadel-ops.labels" . | nindent 4 }}
+spec:
+  completions: {{ .Values.job.completions }}
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+  activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "zitadel-ops.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: {{ .Values.job.restartPolicy }}
+      containers:
+        - name: export
+          image: alpine:3.19
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              apk add --no-cache curl jq > /dev/null 2>&1
+              mkdir -p /backup
+
+              # Read token from mounted secret
+              TOKEN=$(cat /secrets/pat)
+              FILENAME=export-$(date +%Y%m%d-%H%M%S).json
+              
+              echo "Starting Zitadel export..."
+              echo "Using ZITADEL_URL: ${ZITADEL_URL}"
+
+              # Export organization data
+              curl -sfv --insecure -X POST \
+                "${ZITADEL_URL}/admin/v1/export" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d '{"org_ids": [], "response_output": true}' \
+                -o /backup/${FILENAME}
+                
+              echo "Export completed successfully"
+              ls -lh /backup/
+          env:
+            - name: ZITADEL_URL
+              value: {{ .Values.url | quote }} # not necessary to mount as env
+          volumeMounts:
+            - name: admin-pat
+              mountPath: /secrets
+              readOnly: true
+          {{- with .Values.resources}}
+          resources:
+            {{- toYaml . | nindent 16 }}
+          {{- end }}
+      volumes:
+        - name: admin-pat
+          secret:
+            secretName: {{ .Values.patSecretName }}
+{{- end }}

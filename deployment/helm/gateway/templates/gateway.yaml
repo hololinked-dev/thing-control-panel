@@ -15,24 +15,26 @@ metadata:
 spec:
   gatewayClassName: kgateway-external-{{ $.Release.Namespace }}
   listeners:
-    - name: {{ printf "https-%s" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
-      hostname: {{ $.Values.hostname }}
+  {{- range $hostnameKey, $hostname := .Values.hostnames }}
+    - name: {{ printf "https-%s" ($hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+      hostname: {{ $hostname }}
       port: 443
       protocol: HTTPS
       tls:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: {{ printf "%s-tls" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+            name: {{ printf "%s-tls" ($hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
       allowedRoutes:
         namespaces:
           from: Same
-    - name: {{ printf "http-%s" ($.Values.hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
-      hostname: {{ $.Values.hostname }}
+    - name: {{ printf "http-%s" ($hostname | replace "." "-") | trunc 63 | trimSuffix "-" }}
+      hostname: {{ $hostname }}
       port: 80
       protocol: HTTP
       allowedRoutes:
         namespaces:
           from: Same
+  {{- end }}
 {{- end }}
 
